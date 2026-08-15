@@ -12,5 +12,8 @@ double vectorMagnitude(Vector2D vector);
 // Calculates gravitational acceleration at a given position
 Vector2D gravitationalAcceleration(Vector2D position);
 
+// Updates state of spacecraft
+void updateSpacecraft(Spacecraft& satellite, double dt);
+
 #endif
 

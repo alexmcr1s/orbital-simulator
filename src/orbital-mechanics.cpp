@@ -21,3 +21,13 @@ Vector2D gravitationalAcceleration(Vector2D position)
 
     return acceleration;
 }
+
+void updateSpacecraft(Spacecraft& satellite, double dt) {
+    Vector2D acceleration = gravitationalAcceleration(satellite.position);
+
+    satellite.velocity.x += acceleration.x * dt;
+    satellite.velocity.y += acceleration.y * dt;
+
+    satellite.position.x += satellite.velocity.x * dt;
+    satellite.position.y += satellite.velocity.y * dt;
+}

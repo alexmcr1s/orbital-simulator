@@ -2,6 +2,11 @@
 #include "orbital-mechanics.h"
 #include "constants.h"
 
+void initializeSpacecraft(Spacecraft& satellite, double radius) {
+    satellite.position.x = radius;
+    satellite.position.y = 0;
+}
+
 double circularVelocity(double radius) {
     return sqrt(EARTH_MU / radius);
 }
@@ -30,4 +35,38 @@ void updateSpacecraft(Spacecraft& satellite, double dt) {
 
     satellite.position.x += satellite.velocity.x * dt;
     satellite.position.y += satellite.velocity.y * dt;
+}
+
+double specificOrbitalEnergy(const Spacecraft& satellite, double speed, double radius) {
+    double orbitalEnergy = (speed * speed) / 2.0 - EARTH_MU / radius;
+
+    return orbitalEnergy;
+}
+
+double spacecraftSpeed(const Spacecraft& satellite){
+    double speed = sqrt(
+            satellite.velocity.x * satellite.velocity.x +
+            satellite.velocity.y * satellite.velocity.y
+        );
+
+    return speed;
+}
+
+double specificAngularMomentum(const Spacecraft& satellite) {
+    double h = satellite.position.x * satellite.velocity.y 
+             - satellite.position.y * satellite.velocity.x;
+
+    return h;
+}
+
+double orbitalEccentricity(double specificEnergy, double angularMomentum) {
+    double eccentricitySquared =
+        1 + (2 * specificEnergy * angularMomentum * angularMomentum)
+        / (EARTH_MU * EARTH_MU);
+
+    if (eccentricitySquared < 0 && eccentricitySquared > -1e-10) {
+        eccentricitySquared = 0;
+    }
+
+    return sqrt(eccentricitySquared);
 }

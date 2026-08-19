@@ -4,7 +4,7 @@
 
 ## Compilation:
 
-src code:
+src code: <br>
 g++ src/main.cpp src/orbital-mechanics.cpp -Iinclude -o orbital-simulator <br>
 ./orbital-simulator <br>
 

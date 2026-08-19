@@ -1,6 +1,6 @@
-# orbital-simulator
+# orbital-simulator <br>
 
-## Satellite Orbit Simulator Commands - Linux filesystem - Ubuntu (WSL 2)
+Satellite Orbit Simulator Commands - Linux filesystem - Ubuntu (WSL 2)
 
 ## Compilation:
 

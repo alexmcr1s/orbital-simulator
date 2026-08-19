@@ -1,6 +1,7 @@
 #include "data-structures.h"             
 #include "orbital-mechanics.h"           
 #include "constants.h"
+
 #include <iostream>                     // Input/Output                   
 #include <cmath>                        // Math functions
 #include <iomanip>                      // More math
@@ -9,106 +10,172 @@
 using namespace std;
 
 int main() {
-     // Initializing data & creating output file
+
+     // Prepare CSV
+     ofstream outputFile("orbit.csv");
+     outputFile << "time,x,y,altitude\n";
+
+     // Get altitude & radius
      double altitudeKm;
 
      cout << "Enter altitude of satellite in kilometers: " << endl;
      cin >> altitudeKm;
 
-     ofstream outputFile("orbit.csv");
-     outputFile << "time,x,y,altitude\n";
-
      double altitude = altitudeKm * 1000;
      double radius = EARTH_RADIUS + altitude;
-     double orbitalPeriod = (2 * PI) * sqrt((radius * radius * radius) / EARTH_MU);
-     int step = 0;
-     int totalSteps = round(orbitalPeriod / dt);
-     double simTime = 0.0;
 
+     // Initialize spacecrafrt position
      Spacecraft satellite;
-
-     // Start satellite directly to the right of Earth.
      initializeSpacecraft(satellite, radius);
 
-     // For a circular orbit, velocity is perpendicular to the radius vector.
-     // Multiplier added to circular valocity to simulate elipse rather than perfect circle
      satellite.velocity.x = 0;
-     satellite.velocity.y = circularVelocity(radius) * 1.0885;                   // Multiplier
+     satellite.velocity.y = circularVelocity(radius) * 1.5;        //  * Multiplier
 
-     // Gathering spacecraft data
+     // Save initial state before simulation changes satellite
+     double initialX = satellite.position.x;
+     double initialY = satellite.position.y;
+     double initialVelocityX = satellite.velocity.x;
+     double initialVelocityY = satellite.velocity.y;
+
+     // Initial orbital parameters
      double speed = spacecraftSpeed(satellite);
+
      double specificEnergy = specificOrbitalEnergy(satellite, speed, radius);
 
-     // Decimal precision for results
-     cout << fixed << setprecision(3);
+     double angularMomentum = specificAngularMomentum(satellite);
 
-     // Output results
-     cout << "Position: "
-          << satellite.position.x << ", "
-          << satellite.position.y << endl;
+     double eccentricity = orbitalEccentricity(specificEnergy, angularMomentum);
+ 
+     double semiMajorAxisVal = semiMajorAxis(specificEnergy);
 
-     cout << "Velocity: "
-          << satellite.velocity.x << ", "
-          << satellite.velocity.y << endl;
+     // Classify trajectory
+     TrajectoryType trajectoryType;
 
-     while (simTime < orbitalPeriod) {
-          double remainingTime = orbitalPeriod - simTime;
-          double currentDt = dt;
-
-          if (remainingTime < dt) {
-               currentDt = remainingTime;
+     if (specificEnergy < 0) {
+          if (eccentricity < ECCENTRICITY_TOLERANCE) {
+               trajectoryType = TrajectoryType::Circular;
           }
-
-          updateSpacecraft(satellite, currentDt);
-          simTime += currentDt;
-
-          double r = sqrt(
-               satellite.position.x * satellite.position.x +
-               satellite.position.y * satellite.position.y
-          );
-
-          double alt = r - EARTH_RADIUS;
-          double altKm = alt / 1000.0;
-
-          outputFile << simTime << ","
-           << satellite.position.x << ","
-           << satellite.position.y << ","
-           << altKm << "\n";
-          
-          if (step % 100 == 0) {
-               cout << "Position: " << satellite.position.x
-               << ", " << satellite.position.y << endl;
-
-               cout << "Altitude: " << altKm << endl;
+          else {
+               trajectoryType = TrajectoryType::Elliptical;
           }
-
-          step++;
      }
+     else if (specificEnergy > 0) {
+          trajectoryType = TrajectoryType::Hyperbolic;
+     }
+     else {
+           trajectoryType = TrajectoryType::Parabolic;
+     }
+
+     // Values only valid for bound orbits
+     double periapsisAltitudeKm = 0.0;
+     double apoapsisAltitudeKm = 0.0;
+     double orbitalPeriod = 0.0;
+
+     // Run appropriate simulation
+     switch (trajectoryType) {
+          case TrajectoryType::Circular:
+          case TrajectoryType::Elliptical: {
+               double periapsisRadiusVal = periapsisRadius(semiMajorAxisVal, eccentricity);
+               periapsisAltitudeKm = (periapsisRadiusVal - EARTH_RADIUS) / 1000.0;
+
+               double apoapsisRadiusVal = apoapsisRadius(semiMajorAxisVal, eccentricity);
+               apoapsisAltitudeKm = (apoapsisRadiusVal - EARTH_RADIUS) / 1000.0;
+
+               orbitalPeriod = (2.0 * PI) * sqrt((semiMajorAxisVal * semiMajorAxisVal * semiMajorAxisVal) / EARTH_MU);
+
+               simulateOrbit(
+                    satellite,
+                    orbitalPeriod,
+                    dt,
+                    outputFile
+               );
+               break;
+          }
+
+          case TrajectoryType::Parabolic:
+          case TrajectoryType::Hyperbolic:
+
+               simulateEscape(satellite, dt, ESCAPE_LIMIT, outputFile);
+               break;
+    }
 
      outputFile.close();
 
-     cout << "Final Position: " << satellite.position.x
-          << ", " << satellite.position.y << endl;
-
+     // Final position difference
      double error = sqrt(
-          (satellite.position.x - radius) *
-          (satellite.position.x - radius)
+          (satellite.position.x - initialX) *
+          (satellite.position.x - initialX)
           +
-          satellite.position.y *
-          satellite.position.y
+          (satellite.position.y - initialY) *
+          (satellite.position.y - initialY)
      );
 
-     double errorKm = error / 1000.0;
+     cout << fixed << setprecision(3);
 
-     cout << "Error: " << error << endl;
-     cout << "Specific Orbital Energy: "
-          << specificEnergy << endl;
+     // Initial state
+     cout << "\n=== Initial State ===" << endl;
 
-     double angularMomentum = specificAngularMomentum(satellite);
-     cout << "Specific Angular Momentum: " << angularMomentum << endl;
+     cout << "Position: "
+          << initialX << ", "
+          << initialY << " m" << endl;
 
-     double eccentricity = orbitalEccentricity(specificEnergy, angularMomentum);
-     cout << "Orbital Eccentricity: " << eccentricity << endl;
+     cout << "Velocity: "
+          << initialVelocityX << ", "
+          << initialVelocityY << " m/s" << endl;
+
+     // Orbital parameters
+     cout << "\n=== Orbital Parameters ===" << endl;
+
+     cout << "Specific Energy: "
+          << specificEnergy
+          << " J/kg" << endl;
+
+     cout << "Specific Angular Momentum: "
+          << angularMomentum
+          << " m^2/s" << endl;
+
+     cout << "Eccentricity: "
+          << eccentricity << endl;
+
+     cout << "Semi-major axis: "
+          << semiMajorAxisVal / 1000.0
+          << " km" << endl;
+
+     switch (trajectoryType) {
+
+          case TrajectoryType::Circular:
+               cout << "Trajectory Type: Circular Orbit" << endl;
+               cout << "Periapsis altitude: " << periapsisAltitudeKm << " km" << endl;
+               cout << "Apoapsis altitude: " << apoapsisAltitudeKm << " km" << endl;
+               cout << "Orbital Period: " << orbitalPeriod << " s" << endl;
+               break;
+
+          case TrajectoryType::Elliptical:
+               cout << "Trajectory Type: Elliptical Orbit" << endl;
+               cout << "Periapsis altitude: " << periapsisAltitudeKm << " km" << endl;
+               cout << "Apoapsis altitude: " << apoapsisAltitudeKm << " km" << endl;
+               cout << "Orbital Period: " << orbitalPeriod << " s" << endl;
+               break;
+
+          case TrajectoryType::Parabolic:
+               cout << "Trajectory Type: Parabolic Escape" << endl;
+               break;
+
+          case TrajectoryType::Hyperbolic:
+               cout << "Trajectory Type: Hyperbolic Escape" << endl;
+               break;
+     }
+
+     // Final state
+     cout << "\n=== Final State ===" << endl;
+
+     cout << "Final Position: " << satellite.position.x << ", " << satellite.position.y << " m" << endl;
+
+    // Only meaningful for closed orbits
+    if (trajectoryType == TrajectoryType::Circular || trajectoryType == TrajectoryType::Elliptical) {
+          cout << "Position Error: "
+               << error << " m" << endl;
+     }
 
      return 0;
 }

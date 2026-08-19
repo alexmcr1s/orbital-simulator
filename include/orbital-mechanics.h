@@ -2,6 +2,7 @@
 #define ORBITAL_MECHANICS_H
 
 #include "data-structures.h"
+#include <fstream>
 
 // Starting the satellite exactly right of Earth
 void initializeSpacecraft(Spacecraft& satellite, double radius);
@@ -30,6 +31,21 @@ double specificAngularMomentum(const Spacecraft& satellite);
 
 // Eccentricity of orbit
 double orbitalEccentricity(double specificEnergy, double angularMomentum);
+
+// Semi-major axis
+double semiMajorAxis(double specificEnergy);
+
+// Periapsis radius (lowest point)
+double periapsisRadius(double semiMajorAxis, double eccentricity);
+
+// Apoapsis Radius (highest point)
+double apoapsisRadius(double semiMajorAxis, double eccentricity);
+
+// Simulates one orbit
+void simulateOrbit(Spacecraft& satellite, double orbitalPeriod, double dt, std::ofstream& outputFile);
+
+// Simualtes the escape trajectory
+void simulateEscape(Spacecraft& satellite, double dt, double escapeLimit, std::ofstream& outputFile);
 
 #endif
 

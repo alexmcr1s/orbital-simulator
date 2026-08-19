@@ -1,6 +1,9 @@
-#include <cmath>
 #include "orbital-mechanics.h"
 #include "constants.h"
+
+#include <cmath>
+#include <fstream>
+
 
 void initializeSpacecraft(Spacecraft& satellite, double radius) {
     satellite.position.x = radius;
@@ -38,25 +41,19 @@ void updateSpacecraft(Spacecraft& satellite, double dt) {
 }
 
 double specificOrbitalEnergy(const Spacecraft& satellite, double speed, double radius) {
-    double orbitalEnergy = (speed * speed) / 2.0 - EARTH_MU / radius;
-
-    return orbitalEnergy;
+    return (speed * speed) / 2.0 - EARTH_MU / radius;
 }
 
 double spacecraftSpeed(const Spacecraft& satellite){
-    double speed = sqrt(
+    return sqrt(
             satellite.velocity.x * satellite.velocity.x +
             satellite.velocity.y * satellite.velocity.y
         );
-
-    return speed;
 }
 
 double specificAngularMomentum(const Spacecraft& satellite) {
-    double h = satellite.position.x * satellite.velocity.y 
+    return satellite.position.x * satellite.velocity.y 
              - satellite.position.y * satellite.velocity.x;
-
-    return h;
 }
 
 double orbitalEccentricity(double specificEnergy, double angularMomentum) {
@@ -69,4 +66,65 @@ double orbitalEccentricity(double specificEnergy, double angularMomentum) {
     }
 
     return sqrt(eccentricitySquared);
+}
+
+double semiMajorAxis(double specificEnergy) {
+    return -EARTH_MU / (2.0 * specificEnergy);
+}
+
+double periapsisRadius(double semiMajorAxis, double eccentricity) {
+    return semiMajorAxis * (1.0 - eccentricity);
+}
+
+double apoapsisRadius(double semiMajorAxis, double eccentricity) {
+    return semiMajorAxis * (1.0 + eccentricity);
+}
+
+void simulateOrbit(Spacecraft& satellite, double orbitalPeriod, double dt, std::ofstream& outputFile) {
+    double simTime = 0.0;
+
+    while (simTime < orbitalPeriod) {
+        double remainingTime = orbitalPeriod - simTime;
+        double currentDt = dt;
+
+        if (remainingTime < dt) { currentDt = remainingTime; }
+
+        updateSpacecraft(satellite, currentDt);
+        simTime += currentDt;
+
+        double currentRadius = sqrt(
+            satellite.position.x * satellite.position.x +
+            satellite.position.y * satellite.position.y
+        );
+
+        double altitudeKm = (currentRadius - EARTH_RADIUS) / 1000.0;
+
+        outputFile << simTime << ","
+                   << satellite.position.x << ","
+                   << satellite.position.y << ","
+                   << altitudeKm << "\n";
+    }
+}
+
+void simulateEscape(Spacecraft& satellite, double dt, double escapeLimit, std::ofstream& outputFile) {
+    double simTime = 0.0;
+
+    double currentRadius = sqrt(
+        satellite.position.x * satellite.position.x +
+        satellite.position.y * satellite.position.y
+    );
+
+    while (currentRadius < escapeLimit) {
+        updateSpacecraft(satellite, dt);
+        simTime += dt;
+
+        currentRadius = sqrt(satellite.position.x * satellite.position.x + satellite.position.y * satellite.position.y);
+
+        double altitudeKm = (currentRadius - EARTH_RADIUS) / 1000.0;
+
+        outputFile << simTime << ","
+                   << satellite.position.x << ","
+                   << satellite.position.y << ","
+                   << altitudeKm << "\n";
+    }
 }

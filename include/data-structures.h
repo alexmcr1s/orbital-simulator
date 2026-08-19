@@ -14,4 +14,11 @@ struct Spacecraft {
     Vector2D velocity;
 };
 
+enum class TrajectoryType {
+    Circular,
+    Elliptical,
+    Parabolic,
+    Hyperbolic
+};
+
 #endif

@@ -3,11 +3,11 @@
 Satellite Orbit Simulator Commands - Linux filesystem - Ubuntu (WSL 2)
 
 ## compilation:
-g++ src/main.cpp src/orbital-mechanics.cpp -Iinclude -o orbital-simulator <br>
-./orbital-simulator <br>
+g++ src/main.cpp src/orbital-mechanics.cpp -Iinclude -o orbital-simulator
+./orbital-simulator
 
 ## .venv activation:
-source .venv/bin/activate <br> 
+source .venv/bin/activate 
 
 ## .venv verification: 
 python -c "import pandas; import matplotlib; print('ready')"

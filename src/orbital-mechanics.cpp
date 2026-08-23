@@ -80,7 +80,7 @@ double apoapsisRadius(double semiMajorAxis, double eccentricity) {
     return semiMajorAxis * (1.0 + eccentricity);
 }
 
-void simulateOrbit(Spacecraft& satellite, double orbitalPeriod, double dt, std::ofstream& outputFile) {
+SimulationResult simulateOrbit(Spacecraft& satellite, double orbitalPeriod, double dt, std::ofstream& outputFile, double& impactTime) {
     double simTime = 0.0;
 
     while (simTime < orbitalPeriod) {
@@ -97,6 +97,11 @@ void simulateOrbit(Spacecraft& satellite, double orbitalPeriod, double dt, std::
             satellite.position.y * satellite.position.y
         );
 
+        if (currentRadius <= EARTH_RADIUS) {
+            impactTime = simTime;
+            return SimulationResult::Impact;
+        }
+
         double altitudeKm = (currentRadius - EARTH_RADIUS) / 1000.0;
 
         outputFile << simTime << ","
@@ -104,9 +109,10 @@ void simulateOrbit(Spacecraft& satellite, double orbitalPeriod, double dt, std::
                    << satellite.position.y << ","
                    << altitudeKm << "\n";
     }
+    return SimulationResult::Orbit;
 }
 
-void simulateEscape(Spacecraft& satellite, double dt, double escapeLimit, std::ofstream& outputFile) {
+SimulationResult simulateEscape(Spacecraft& satellite, double dt, double escapeLimit, std::ofstream& outputFile) {
     double simTime = 0.0;
 
     double currentRadius = sqrt(
@@ -127,4 +133,5 @@ void simulateEscape(Spacecraft& satellite, double dt, double escapeLimit, std::o
                    << satellite.position.y << ","
                    << altitudeKm << "\n";
     }
+    return SimulationResult::Escape;
 }

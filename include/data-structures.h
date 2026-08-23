@@ -14,11 +14,19 @@ struct Spacecraft {
     Vector2D velocity;
 };
 
+// Enum for trajectory
 enum class TrajectoryType {
     Circular,
     Elliptical,
     Parabolic,
     Hyperbolic
+};
+
+// Enum for result
+enum class SimulationResult {
+    Orbit,
+    Impact,
+    Escape
 };
 
 #endif

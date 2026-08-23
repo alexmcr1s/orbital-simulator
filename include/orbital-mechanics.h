@@ -35,17 +35,17 @@ double orbitalEccentricity(double specificEnergy, double angularMomentum);
 // Semi-major axis
 double semiMajorAxis(double specificEnergy);
 
-// Periapsis radius (lowest point)
+// Periapsis radius (lowest orbital point)
 double periapsisRadius(double semiMajorAxis, double eccentricity);
 
-// Apoapsis Radius (highest point)
+// Apoapsis Radius (highest orbital point)
 double apoapsisRadius(double semiMajorAxis, double eccentricity);
 
 // Simulates one orbit
-void simulateOrbit(Spacecraft& satellite, double orbitalPeriod, double dt, std::ofstream& outputFile);
+SimulationResult simulateOrbit(Spacecraft& satellite, double orbitalPeriod, double dt, std::ofstream& outputFile, double& impactTime);
 
 // Simualtes the escape trajectory
-void simulateEscape(Spacecraft& satellite, double dt, double escapeLimit, std::ofstream& outputFile);
+SimulationResult simulateEscape(Spacecraft& satellite, double dt, double escapeLimit, std::ofstream& outputFile);
 
 #endif
 

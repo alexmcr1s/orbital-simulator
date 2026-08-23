@@ -29,7 +29,7 @@ int main() {
      initializeSpacecraft(satellite, radius);
 
      satellite.velocity.x = 0;
-     satellite.velocity.y = circularVelocity(radius) * 1.5;        //  * Multiplier
+     satellite.velocity.y = circularVelocity(radius) * 0.7;        //  * Multiplier
 
      // Save initial state before simulation changes satellite
      double initialX = satellite.position.x;
@@ -70,6 +70,10 @@ int main() {
      double periapsisAltitudeKm = 0.0;
      double apoapsisAltitudeKm = 0.0;
      double orbitalPeriod = 0.0;
+     SimulationResult result;
+     double impactTime = -1.0;
+     double impactPercent = 0.0;
+     
 
      // Run appropriate simulation
      switch (trajectoryType) {
@@ -83,23 +87,21 @@ int main() {
 
                orbitalPeriod = (2.0 * PI) * sqrt((semiMajorAxisVal * semiMajorAxisVal * semiMajorAxisVal) / EARTH_MU);
 
-               simulateOrbit(
-                    satellite,
-                    orbitalPeriod,
-                    dt,
-                    outputFile
-               );
+               result = simulateOrbit(satellite, orbitalPeriod, dt, outputFile, impactTime);
                break;
           }
 
           case TrajectoryType::Parabolic:
           case TrajectoryType::Hyperbolic:
-
-               simulateEscape(satellite, dt, ESCAPE_LIMIT, outputFile);
+               result = simulateEscape(satellite, dt, ESCAPE_LIMIT, outputFile);
                break;
     }
 
      outputFile.close();
+
+     if (impactPercent != -1) {
+          impactPercent = (impactTime / orbitalPeriod) * 100;
+     }
 
      // Final position difference
      double error = sqrt(
@@ -145,6 +147,7 @@ int main() {
 
           case TrajectoryType::Circular:
                cout << "Trajectory Type: Circular Orbit" << endl;
+               cout << "SimulationResult: Orbit" << endl;
                cout << "Periapsis altitude: " << periapsisAltitudeKm << " km" << endl;
                cout << "Apoapsis altitude: " << apoapsisAltitudeKm << " km" << endl;
                cout << "Orbital Period: " << orbitalPeriod << " s" << endl;
@@ -152,17 +155,28 @@ int main() {
 
           case TrajectoryType::Elliptical:
                cout << "Trajectory Type: Elliptical Orbit" << endl;
-               cout << "Periapsis altitude: " << periapsisAltitudeKm << " km" << endl;
-               cout << "Apoapsis altitude: " << apoapsisAltitudeKm << " km" << endl;
-               cout << "Orbital Period: " << orbitalPeriod << " s" << endl;
-               break;
+
+               if (result == SimulationResult::Orbit) {
+                    cout << "SimulationResult: Orbit" << endl;
+                    cout << "Periapsis altitude: " << periapsisAltitudeKm << " km" << endl;
+                    cout << "Apoapsis altitude: " << apoapsisAltitudeKm << " km" << endl;
+                    cout << "Orbital Period: " << orbitalPeriod << " s" << endl;
+                    break;
+               } 
+               
+               else if (result == SimulationResult::Impact) {
+                    cout << "Simulation Result: Impact" << endl;
+                    break;
+               }
 
           case TrajectoryType::Parabolic:
-               cout << "Trajectory Type: Parabolic Escape" << endl;
+               cout << "Trajectory Type: Parabolic" << endl;
+               cout << "Simulation Result: Escape" << endl;
                break;
 
           case TrajectoryType::Hyperbolic:
-               cout << "Trajectory Type: Hyperbolic Escape" << endl;
+               cout << "Trajectory Type: Hyperbolic" << endl;
+               cout << "Simulation Result: Escape" << endl;
                break;
      }
 
@@ -175,6 +189,11 @@ int main() {
     if (trajectoryType == TrajectoryType::Circular || trajectoryType == TrajectoryType::Elliptical) {
           cout << "Position Error: "
                << error << " m" << endl;
+     }
+
+     if (result == SimulationResult::Impact) {
+          cout << "Impact Time: " << impactTime << " s" << endl;
+          cout << "Orbital Period Elapsed: " << impactPercent << " %" << endl;
      }
 
      return 0;

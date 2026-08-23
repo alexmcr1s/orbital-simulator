@@ -18,5 +18,5 @@ python -c "import pandas; import matplotlib; print('ready')"
 
 ## visualization code via .png output: 
 python plot_orbit.py
-<br>
+<br><br>
 The current orbit.png is the most recent simulation that was visualized.

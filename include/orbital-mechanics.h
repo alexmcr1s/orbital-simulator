@@ -3,6 +3,7 @@
 
 #include "data-structures.h"
 #include <fstream>
+#include <vector>
 
 // Starting the satellite exactly right of Earth
 void initializeSpacecraft(Spacecraft& satellite, double radius);
@@ -42,10 +43,10 @@ double periapsisRadius(double semiMajorAxis, double eccentricity);
 double apoapsisRadius(double semiMajorAxis, double eccentricity);
 
 // Simulates one orbit
-SimulationResult simulateOrbit(Spacecraft& satellite, double orbitalPeriod, double dt, std::ofstream& outputFile, double& impactTime);
+SimulationOutput simulateOrbit(Spacecraft& satellite, double orbitalPeriod, double dt);
 
 // Simualtes the escape trajectory
-SimulationResult simulateEscape(Spacecraft& satellite, double dt, double escapeLimit, std::ofstream& outputFile);
+SimulationOutput simulateEscape(Spacecraft& satellite, double dt, double escapeLimit);
 
 #endif
 

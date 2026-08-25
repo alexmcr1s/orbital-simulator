@@ -4,7 +4,7 @@ Satellite Orbit Simulator Commands - Linux filesystem - Ubuntu (WSL 2)
 
 ## compilation:
 g++ src/main.cpp src/orbital-mechanics.cpp -Iinclude -o orbital-simulator
-<br>
+<br><br>
 ./orbital-simulator
 <br>
 

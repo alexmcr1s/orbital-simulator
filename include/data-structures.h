@@ -1,6 +1,8 @@
 #ifndef DATA_STRUCTURES_H
 #define DATA_STRUCTURES_H 1
 
+#include <vector>
+
 
 // A 2D vector used for both position and velocity
 struct Vector2D {
@@ -27,6 +29,20 @@ enum class SimulationResult {
     Orbit,
     Impact,
     Escape
+};
+
+// For rendering purposes (future)
+struct SimulationState {
+    double time;
+    Vector2D position;
+    Vector2D velocity;
+    double altitude;
+};
+
+struct SimulationOutput {
+    SimulationResult result;
+    std::vector<SimulationState> states;
+    double impactTime;
 };
 
 #endif

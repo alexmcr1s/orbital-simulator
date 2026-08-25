@@ -29,7 +29,7 @@ int main() {
      initializeSpacecraft(satellite, radius);
 
      satellite.velocity.x = 0;
-     satellite.velocity.y = circularVelocity(radius) * 0.7;        //  * Multiplier
+     satellite.velocity.y = circularVelocity(radius) * 1.5;        //  * Multiplier
 
      // Save initial state before simulation changes satellite
      double initialX = satellite.position.x;
@@ -70,8 +70,7 @@ int main() {
      double periapsisAltitudeKm = 0.0;
      double apoapsisAltitudeKm = 0.0;
      double orbitalPeriod = 0.0;
-     SimulationResult result;
-     double impactTime = -1.0;
+     SimulationOutput simulation;
      double impactPercent = 0.0;
      
 
@@ -87,20 +86,25 @@ int main() {
 
                orbitalPeriod = (2.0 * PI) * sqrt((semiMajorAxisVal * semiMajorAxisVal * semiMajorAxisVal) / EARTH_MU);
 
-               result = simulateOrbit(satellite, orbitalPeriod, dt, outputFile, impactTime);
+               simulation = simulateOrbit(satellite, orbitalPeriod, dt);
                break;
           }
 
           case TrajectoryType::Parabolic:
           case TrajectoryType::Hyperbolic:
-               result = simulateEscape(satellite, dt, ESCAPE_LIMIT, outputFile);
+               simulation = simulateEscape(satellite, dt, ESCAPE_LIMIT);
                break;
     }
 
+     for (const SimulationState& state : simulation.states) {
+          outputFile << state.time << "," << state.position.x << ","
+                     << state.position.y << "," << state.altitude << "\n";
+     }
+
      outputFile.close();
 
-     if (impactPercent != -1) {
-          impactPercent = (impactTime / orbitalPeriod) * 100;
+     if (simulation.result == SimulationResult::Impact) {
+          impactPercent = (simulation.impactTime / orbitalPeriod) * 100.0;
      }
 
      // Final position difference
@@ -146,7 +150,7 @@ int main() {
      switch (trajectoryType) {
 
           case TrajectoryType::Circular:
-               cout << "Trajectory Type: Circular Orbit" << endl;
+               cout << "Trajectory Type: Circular" << endl;
                cout << "SimulationResult: Orbit" << endl;
                cout << "Periapsis altitude: " << periapsisAltitudeKm << " km" << endl;
                cout << "Apoapsis altitude: " << apoapsisAltitudeKm << " km" << endl;
@@ -154,9 +158,9 @@ int main() {
                break;
 
           case TrajectoryType::Elliptical:
-               cout << "Trajectory Type: Elliptical Orbit" << endl;
+               cout << "Trajectory Type: Elliptical" << endl;
 
-               if (result == SimulationResult::Orbit) {
+               if (simulation.result == SimulationResult::Orbit) {
                     cout << "SimulationResult: Orbit" << endl;
                     cout << "Periapsis altitude: " << periapsisAltitudeKm << " km" << endl;
                     cout << "Apoapsis altitude: " << apoapsisAltitudeKm << " km" << endl;
@@ -164,7 +168,7 @@ int main() {
                     break;
                } 
                
-               else if (result == SimulationResult::Impact) {
+               else if (simulation.result == SimulationResult::Impact) {
                     cout << "Simulation Result: Impact" << endl;
                     break;
                }
@@ -184,15 +188,15 @@ int main() {
      cout << "\n=== Final State ===" << endl;
 
      cout << "Final Position: " << satellite.position.x << ", " << satellite.position.y << " m" << endl;
-
-    // Only meaningful for closed orbits
-    if (trajectoryType == TrajectoryType::Circular || trajectoryType == TrajectoryType::Elliptical) {
-          cout << "Position Error: "
-               << error << " m" << endl;
+     
+     // Only meaningful for closed orbits
+     if (simulation.result == SimulationResult::Orbit) {
+          cout << "Position Error: " << error << " m" << endl;
      }
 
-     if (result == SimulationResult::Impact) {
-          cout << "Impact Time: " << impactTime << " s" << endl;
+     // Only meaningful for impacts
+     if (simulation.result == SimulationResult::Impact) {
+          cout << "Impact Time: " << simulation.impactTime << " s" << endl;
           cout << "Orbital Period Elapsed: " << impactPercent << " %" << endl;
      }
 

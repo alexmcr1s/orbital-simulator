@@ -80,7 +80,9 @@ double apoapsisRadius(double semiMajorAxis, double eccentricity) {
     return semiMajorAxis * (1.0 + eccentricity);
 }
 
-SimulationResult simulateOrbit(Spacecraft& satellite, double orbitalPeriod, double dt, std::ofstream& outputFile, double& impactTime) {
+SimulationOutput simulateOrbit(Spacecraft& satellite, double orbitalPeriod, double dt) {
+    SimulationOutput output;
+    output.impactTime = -1.0;
     double simTime = 0.0;
 
     while (simTime < orbitalPeriod) {
@@ -97,22 +99,32 @@ SimulationResult simulateOrbit(Spacecraft& satellite, double orbitalPeriod, doub
             satellite.position.y * satellite.position.y
         );
 
-        if (currentRadius <= EARTH_RADIUS) {
-            impactTime = simTime;
-            return SimulationResult::Impact;
-        }
-
         double altitudeKm = (currentRadius - EARTH_RADIUS) / 1000.0;
 
-        outputFile << simTime << ","
-                   << satellite.position.x << ","
-                   << satellite.position.y << ","
-                   << altitudeKm << "\n";
+        SimulationState state;
+
+        state.time = simTime;
+        state.position = satellite.position;
+        state.velocity = satellite.velocity;
+        state.altitude = altitudeKm;
+
+        output.states.push_back(state);
+
+        if (currentRadius <= EARTH_RADIUS) {
+            output.impactTime = simTime;
+            output.result = SimulationResult::Impact;
+
+            return output;
+        }
     }
-    return SimulationResult::Orbit;
+    
+    output.result = SimulationResult::Orbit;
+
+    return output;
 }
 
-SimulationResult simulateEscape(Spacecraft& satellite, double dt, double escapeLimit, std::ofstream& outputFile) {
+SimulationOutput simulateEscape(Spacecraft& satellite, double dt, double escapeLimit) {
+    SimulationOutput output;
     double simTime = 0.0;
 
     double currentRadius = sqrt(
@@ -128,10 +140,15 @@ SimulationResult simulateEscape(Spacecraft& satellite, double dt, double escapeL
 
         double altitudeKm = (currentRadius - EARTH_RADIUS) / 1000.0;
 
-        outputFile << simTime << ","
-                   << satellite.position.x << ","
-                   << satellite.position.y << ","
-                   << altitudeKm << "\n";
+        SimulationState state;
+
+        state.time = simTime;
+        state.position = satellite.position;
+        state.velocity = satellite.velocity;
+        state.altitude = altitudeKm;
+
+        output.states.push_back(state);
     }
-    return SimulationResult::Escape;
+
+    return output;
 }

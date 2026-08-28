@@ -14,8 +14,16 @@ int main() {
      // Prepare CSV
      ofstream outputFile("orbit.csv");
      outputFile << "time,x,y,altitude\n";
+     ofstream metadataFile("simulation_metadata.csv");
+     metadataFile
+          << "trajectory_type,"
+          << "simulation_result,"
+          << "integrator,"
+          << "periapsis_altitude_km,"
+          << "apoapsis_altitude_km,"
+          << "periapsis_direction_deg\n";
 
-     // Get altitude & radius
+     // Get altitude, velocity multiplier, and launch angle from user
      double altitudeKm;
 
      cout << "Enter altitude of satellite in kilometers: " << endl;
@@ -24,12 +32,41 @@ int main() {
      double altitude = altitudeKm * 1000;
      double radius = EARTH_RADIUS + altitude;
 
-     // Initialize spacecrafrt position
+     double velocityMultiplier = 1.0;
+
+     cout << "Enter velocity multiplier: " << endl;
+     cin >> velocityMultiplier;
+
+     double launchAngleDeg = 0.0;
+
+     cout << "Enter launch angle in degrees: " << endl;
+     cin >> launchAngleDeg;
+
+     IntegratorType integrator;
+     string intType;
+
+     cout << "Select Integrator Type ('E' - Euler, 'V' - Verlet, 'R' - RK4): ";
+     cin >> intType;
+
+     while (intType != "E" && intType != "V" && intType != "R") {
+          cout << "Please enter valid selection ('E', 'V', 'R'): ";
+          cin >> intType;
+     }
+
+     if (intType == "E")      { integrator = IntegratorType::Euler; }
+     else if (intType == "V") { integrator = IntegratorType::Verlet; }
+     else                     { integrator = IntegratorType::RK4; }
+
+     // Initialize spacecraft position
      Spacecraft satellite;
      initializeSpacecraft(satellite, radius);
 
-     satellite.velocity.x = 0;
-     satellite.velocity.y = circularVelocity(radius) * 1.5;        //  * Multiplier
+     // Initialize spacecraft velocity
+     double launchSpeed = circularVelocity(radius) * velocityMultiplier;
+     double launchAngleRad = launchAngleDeg * PI / 180.0;
+
+     satellite.velocity.x = launchSpeed * cos(launchAngleRad);
+     satellite.velocity.y = launchSpeed * sin(launchAngleRad);
 
      // Save initial state before simulation changes satellite
      double initialX = satellite.position.x;
@@ -39,13 +76,17 @@ int main() {
 
      // Initial orbital parameters
      double speed = spacecraftSpeed(satellite);
-
      double specificEnergy = specificOrbitalEnergy(satellite, speed, radius);
-
      double angularMomentum = specificAngularMomentum(satellite);
 
      double eccentricity = orbitalEccentricity(specificEnergy, angularMomentum);
- 
+     Vector2D eVector = eccentricityVector(satellite);
+     double eVecMagnitude = sqrt(eVector.x * eVector.x + eVector.y * eVector.y);
+
+     double periapsisAngleRad = atan2(eVector.y, eVector.x);
+     double periapsisAngleDeg = periapsisAngleRad * 180.0 / PI;
+     bool hasDefinedPeriapsisDirection = eccentricity >= ECCENTRICITY_TOLERANCE;
+
      double semiMajorAxisVal = semiMajorAxis(specificEnergy);
 
      // Classify trajectory
@@ -66,13 +107,12 @@ int main() {
            trajectoryType = TrajectoryType::Parabolic;
      }
 
-     // Values only valid for bound orbits
      double periapsisAltitudeKm = 0.0;
      double apoapsisAltitudeKm = 0.0;
      double orbitalPeriod = 0.0;
+
      SimulationOutput simulation;
      double impactPercent = 0.0;
-     
 
      // Run appropriate simulation
      switch (trajectoryType) {
@@ -86,25 +126,33 @@ int main() {
 
                orbitalPeriod = (2.0 * PI) * sqrt((semiMajorAxisVal * semiMajorAxisVal * semiMajorAxisVal) / EARTH_MU);
 
-               simulation = simulateOrbit(satellite, orbitalPeriod, dt);
+               simulation = simulateOrbit(satellite, orbitalPeriod, dt, integrator);
                break;
           }
 
           case TrajectoryType::Parabolic:
           case TrajectoryType::Hyperbolic:
-               simulation = simulateEscape(satellite, dt, ESCAPE_LIMIT);
+               simulation = simulateEscape(satellite, dt, ESCAPE_LIMIT, integrator);
                break;
     }
-
-     for (const SimulationState& state : simulation.states) {
-          outputFile << state.time << "," << state.position.x << ","
-                     << state.position.y << "," << state.altitude << "\n";
-     }
 
      outputFile.close();
 
      if (simulation.result == SimulationResult::Impact) {
           impactPercent = (simulation.impactTime / orbitalPeriod) * 100.0;
+     }
+
+     string periapsisAltitudeOutput = "N/A";
+     string apoapsisAltitudeOutput = "N/A";
+     string periapsisDirectionOutput = "N/A";
+
+     if (trajectoryType == TrajectoryType::Circular || trajectoryType == TrajectoryType::Elliptical) {
+          periapsisAltitudeOutput = to_string(periapsisAltitudeKm);
+          apoapsisAltitudeOutput = to_string(apoapsisAltitudeKm);
+     }
+
+     if (hasDefinedPeriapsisDirection) {
+     periapsisDirectionOutput = to_string(periapsisAngleDeg);
      }
 
      // Final position difference
@@ -116,89 +164,153 @@ int main() {
           (satellite.position.y - initialY)
      );
 
+     metadataFile
+          << trajectoryTypeToString(trajectoryType) << ","
+          << simulationResultToString(simulation.result) << ","
+          << integratorTypeToString(integrator) << ","
+          << periapsisAltitudeKm << ","
+          << apoapsisAltitudeKm << ","
+          << periapsisAngleDeg << "\n";
+
+     metadataFile.close();
+
+     for (const SimulationState& state : simulation.states) {
+          outputFile << state.time << "," << state.position.x << ","
+                     << state.position.y << "," << state.altitude << "\n";
+     }
+
      cout << fixed << setprecision(3);
 
      // Initial state
-     cout << "\n=== Initial State ===" << endl;
+     cout << "\n-----------------------------------------------------------------" << endl;
 
-     cout << "Position: "
+     cout << "\n=== Initial State ===\n" << endl;
+
+     cout << "Position:                                "
           << initialX << ", "
           << initialY << " m" << endl;
 
-     cout << "Velocity: "
+     cout << "Velocity:                                "
           << initialVelocityX << ", "
-          << initialVelocityY << " m/s" << endl;
+          << initialVelocityY << " m/s\n" << endl;
+
+     cout << "-----------------------------------------------------------------" << endl;
 
      // Orbital parameters
-     cout << "\n=== Orbital Parameters ===" << endl;
+     cout << "\n=== Orbital Parameters ===\n" << endl;
 
-     cout << "Specific Energy: "
+     cout << "Specific Energy:                         "
           << specificEnergy
           << " J/kg" << endl;
 
-     cout << "Specific Angular Momentum: "
+     cout << "Specific Angular Momentum:               "
           << angularMomentum
-          << " m^2/s" << endl;
+          << " m^2/s\n" << endl;
 
-     cout << "Eccentricity: "
+     cout << "Eccentricity:                            "
           << eccentricity << endl;
 
-     cout << "Semi-major axis: "
+     // !! Test line
+     cout << "Eccentricity Vector Magnitude:            "
+          << eVecMagnitude << "\n" << endl;
+
+     cout << "Semi-major axis:                         "
           << semiMajorAxisVal / 1000.0
-          << " km" << endl;
+          << " km\n" << endl;
 
      switch (trajectoryType) {
 
           case TrajectoryType::Circular:
-               cout << "Trajectory Type: Circular" << endl;
-               cout << "SimulationResult: Orbit" << endl;
-               cout << "Periapsis altitude: " << periapsisAltitudeKm << " km" << endl;
-               cout << "Apoapsis altitude: " << apoapsisAltitudeKm << " km" << endl;
-               cout << "Orbital Period: " << orbitalPeriod << " s" << endl;
+               cout << "Trajectory Type:                         Circular" << endl;
+
+               cout << "SimulationResult:                        Orbit\n" << endl;
+
+               cout << "Periapsis altitude:                      " << periapsisAltitudeKm << " km" << endl;
+
+               cout << "Apoapsis altitude:                       " << apoapsisAltitudeKm << " km\n" << endl;
+
+               cout << "Orbital Period:                          " << orbitalPeriod << " s" << endl;
+
                break;
 
           case TrajectoryType::Elliptical:
-               cout << "Trajectory Type: Elliptical" << endl;
+               cout << "Trajectory Type:                         Elliptical" << endl;
 
                if (simulation.result == SimulationResult::Orbit) {
-                    cout << "SimulationResult: Orbit" << endl;
-                    cout << "Periapsis altitude: " << periapsisAltitudeKm << " km" << endl;
-                    cout << "Apoapsis altitude: " << apoapsisAltitudeKm << " km" << endl;
-                    cout << "Orbital Period: " << orbitalPeriod << " s" << endl;
-                    break;
-               } 
-               
+                    cout << "Simulation Result:                       Orbit\n" << endl;
+               }
                else if (simulation.result == SimulationResult::Impact) {
-                    cout << "Simulation Result: Impact" << endl;
-                    break;
+                    cout << "Simulation Result:                       Impact\n" << endl;
                }
 
+               cout << "Periapsis altitude:                      " << periapsisAltitudeKm << " km" << endl;
+
+               cout << "Periapsis Direction:                     " << periapsisAngleDeg << " degrees" << endl;
+
+               cout << "Apoapsis altitude:                       " << apoapsisAltitudeKm << " km\n" << endl;
+
+               cout << "Orbital Period:                          " << orbitalPeriod << " s" << endl;
+
+               break;
+
           case TrajectoryType::Parabolic:
-               cout << "Trajectory Type: Parabolic" << endl;
-               cout << "Simulation Result: Escape" << endl;
+               cout << "Trajectory Type:                         Parabolic" << endl;
+
+               cout << "Simulation Result:                       Escape\n" << endl;
+
+               cout << "Periapsis Direction:                     " << periapsisAngleDeg << " degrees" << endl;
+
                break;
 
           case TrajectoryType::Hyperbolic:
-               cout << "Trajectory Type: Hyperbolic" << endl;
-               cout << "Simulation Result: Escape" << endl;
+               cout << "Trajectory Type:                         Hyperbolic" << endl;
+
+               cout << "Simulation Result:                       Escape\n" << endl;
+
+               cout << "Periapsis Direction:                     " << periapsisAngleDeg << " degrees" << endl;
+
                break;
      }
 
-     // Final state
-     cout << "\n=== Final State ===" << endl;
+     cout << "\n-----------------------------------------------------------------" << endl;
 
-     cout << "Final Position: " << satellite.position.x << ", " << satellite.position.y << " m" << endl;
+     // Final state
+     cout << "\n=== Final State ===\n" << endl;
+
+     cout << "Final Position:                          " << satellite.position.x << ", " << satellite.position.y << " m" << endl;
      
      // Only meaningful for closed orbits
      if (simulation.result == SimulationResult::Orbit) {
-          cout << "Position Error: " << error << " m" << endl;
+          cout << fixed << setprecision(9);
+          cout << "Position Error:                          " << error << " m" << endl;
      }
 
      // Only meaningful for impacts
      if (simulation.result == SimulationResult::Impact) {
-          cout << "Impact Time: " << simulation.impactTime << " s" << endl;
-          cout << "Orbital Period Elapsed: " << impactPercent << " %" << endl;
+          cout << "Impact Time:                        " << simulation.impactTime << " s" << endl;
+          cout << "Orbital Period Elapsed:             " << impactPercent << " %" << endl;
      }
+
+     cout << "Integrator:                              ";
+
+     switch (integrator) {
+          case IntegratorType::Euler:
+               cout << "Euler";
+               break;
+
+          case IntegratorType::Verlet:
+               cout << "Verlet";
+               break;
+
+          case IntegratorType::RK4:
+               cout << "RK4";
+               break;
+     }
+
+cout << endl;
+
+     cout << "\n-----------------------------------------------------------------\n" << endl;
+
 
      return 0;
 }

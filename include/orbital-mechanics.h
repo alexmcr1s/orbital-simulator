@@ -4,6 +4,7 @@
 #include "data-structures.h"
 #include <fstream>
 #include <vector>
+#include <string>
 
 // Starting the satellite exactly right of Earth
 void initializeSpacecraft(Spacecraft& satellite, double radius);
@@ -20,6 +21,12 @@ Vector2D gravitationalAcceleration(Vector2D position);
 // Updates state of spacecraft
 void updateSpacecraft(Spacecraft& satellite, double dt);
 
+// Velocity Verlet approach
+void updateSpacecraftVerlet(Spacecraft& satellite, double dt);
+
+// RK4 Approach
+void updateSpacecraftRK4(Spacecraft& satellite, double dt);
+
 // Speed of spacecraft
 double spacecraftSpeed(const Spacecraft& sattelite);
 
@@ -33,6 +40,9 @@ double specificAngularMomentum(const Spacecraft& satellite);
 // Eccentricity of orbit
 double orbitalEccentricity(double specificEnergy, double angularMomentum);
 
+// Vector for eccentricity orientation
+Vector2D eccentricityVector(const Spacecraft& satellite);
+
 // Semi-major axis
 double semiMajorAxis(double specificEnergy);
 
@@ -43,10 +53,20 @@ double periapsisRadius(double semiMajorAxis, double eccentricity);
 double apoapsisRadius(double semiMajorAxis, double eccentricity);
 
 // Simulates one orbit
-SimulationOutput simulateOrbit(Spacecraft& satellite, double orbitalPeriod, double dt);
+SimulationOutput simulateOrbit(Spacecraft& satellite, double orbitalPeriod, double dt, IntegratorType integrator);
 
 // Simualtes the escape trajectory
-SimulationOutput simulateEscape(Spacecraft& satellite, double dt, double escapeLimit);
+SimulationOutput simulateEscape(Spacecraft& satellite, double dt, double escapeLimit, IntegratorType integrator);
+
+// Helper for derivatives 
+Derivative evaluateDerivative(const Spacecraft& satellite);
+
+// Helpers for metadata
+std::string trajectoryTypeToString(TrajectoryType type);
+
+std::string simulationResultToString(SimulationResult result);
+
+std::string integratorTypeToString(IntegratorType integrator);
 
 #endif
 

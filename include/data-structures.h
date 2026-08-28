@@ -45,4 +45,16 @@ struct SimulationOutput {
     double impactTime;
 };
 
+enum class IntegratorType {
+    Euler,
+    Verlet,
+    RK4
+};
+
+// Rate of change for position and velocity                   
+struct Derivative {
+    Vector2D position;
+    Vector2D velocity;
+};
+
 #endif

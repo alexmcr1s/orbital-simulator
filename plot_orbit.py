@@ -1,30 +1,23 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import math
 
 # Visualizing orbit from .csv file
 data = pd.read_csv("orbit.csv")
 
+# Transferring metadata
+metadata = pd.read_csv("simulation_metadata.csv")
+
+trajectory_type = metadata["trajectory_type"].iloc[0]
+simulation_result = metadata["simulation_result"].iloc[0]
+integrator = metadata["integrator"].iloc[0]
+
+periapsis_altitude_km = metadata["periapsis_altitude_km"].iloc[0]
+apoapsis_altitude_km = metadata["apoapsis_altitude_km"].iloc[0]
+periapsis_direction_deg = metadata["periapsis_direction_deg"].iloc[0]
+
 x_km = data["x"] / 1000.0
 y_km = data["y"] / 1000.0
-
-radius_km = (x_km**2 + y_km**2) ** 0.5
-
-periapsis_index = radius_km.idxmin()
-apoapsis_index = radius_km.idxmax()
-
-# Periapsis point
-plt.scatter(
-    x_km.loc[periapsis_index],
-    y_km.loc[periapsis_index],
-    label="Periapsis"
-)
-
-# Apoapsis point
-plt.scatter(
-    x_km.loc[apoapsis_index],
-    y_km.loc[apoapsis_index],
-    label="Apoapsis"
-)
 
 plt.plot(x_km, y_km, label="Trajectory")
 
@@ -33,13 +26,43 @@ plt.gca().add_patch(earth)
 
 plt.xlabel("X Position (km)")
 plt.ylabel("Y Position (km)")
-plt.title("Simulated Orbit")
+plt.title(f"Simulated Orbit — {trajectory_type} | "f"{simulation_result} | {integrator}")
 
 # Starting point
 plt.scatter(x_km.iloc[0], y_km.iloc[0], label="Start")
 
 # Final point
-plt.scatter(x_km.iloc[-1], y_km.iloc[-1], label="End")
+if simulation_result == "Impact":
+    end_label = "Impact"
+elif simulation_result == "Escape":
+    end_label = "Escape Limit"
+else:
+    end_label = "End"
+    
+plt.scatter(x_km.iloc[-1], y_km.iloc[-1], label=end_label)
+
+# Periapsis point
+if (simulation_result == "Orbit" and pd.notna(periapsis_altitude_km) and pd.notna(periapsis_direction_deg)):
+    periapsis_radius_km = 6371 + periapsis_altitude_km
+
+    periapsis_angle_rad = math.radians(periapsis_direction_deg)
+
+    periapsis_x = periapsis_radius_km * math.cos(periapsis_angle_rad)
+    periapsis_y = periapsis_radius_km * math.sin(periapsis_angle_rad)
+
+    plt.scatter(periapsis_x, periapsis_y, label="Periapsis")
+
+# Apoapsis point
+if (simulation_result == "Orbit" and pd.notna(apoapsis_altitude_km) and pd.notna(periapsis_direction_deg)):
+    apoapsis_radius_km = 6371 + apoapsis_altitude_km
+
+    apoapsis_angle_deg = periapsis_direction_deg + 180.0
+    apoapsis_angle_rad = math.radians(apoapsis_angle_deg)
+
+    apoapsis_x = apoapsis_radius_km * math.cos(apoapsis_angle_rad)
+    apoapsis_y = apoapsis_radius_km * math.sin(apoapsis_angle_rad)
+
+    plt.scatter(apoapsis_x, apoapsis_y, label="Apoapsis")
 
 plt.legend()
 

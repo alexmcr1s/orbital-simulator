@@ -136,8 +136,6 @@ int main() {
                break;
     }
 
-     outputFile.close();
-
      if (simulation.result == SimulationResult::Impact) {
           impactPercent = (simulation.impactTime / orbitalPeriod) * 100.0;
      }
@@ -178,6 +176,8 @@ int main() {
           outputFile << state.time << "," << state.position.x << ","
                      << state.position.y << "," << state.altitude << "\n";
      }
+
+     outputFile.close();
 
      cout << fixed << setprecision(3);
 

@@ -21,4 +21,9 @@ orbital-simulator
 # CSV file growing too large with large # of orbits
 # Cannot be uploaded to git in this case
 orbit.csv
+
+# Environment activation files
+.venv/
+
+# Latest image generated
 orbit.png

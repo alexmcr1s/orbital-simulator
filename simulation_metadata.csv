@@ -1,2 +1,2 @@
 trajectory_type,simulation_result,integrator,periapsis_altitude_km,apoapsis_altitude_km,periapsis_direction_deg
-Elliptical,Orbit,Euler,294.393,532.759,84.4603
+Elliptical,Orbit,RK4,188.411,666.029,85.4591

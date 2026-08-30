@@ -53,7 +53,7 @@ double periapsisRadius(double semiMajorAxis, double eccentricity);
 double apoapsisRadius(double semiMajorAxis, double eccentricity);
 
 // Simulates one orbit
-SimulationOutput simulateOrbit(Spacecraft& satellite, double orbitalPeriod, double dt, IntegratorType integrator);
+SimulationOutput simulateOrbit(Spacecraft& satellite, double orbitalPeriod, double dt, IntegratorType integrator, int numberOfOrbits);
 
 // Simualtes the escape trajectory
 SimulationOutput simulateEscape(Spacecraft& satellite, double dt, double escapeLimit, IntegratorType integrator);

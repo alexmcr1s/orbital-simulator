@@ -57,6 +57,11 @@ int main() {
      else if (intType == "V") { integrator = IntegratorType::Verlet; }
      else                     { integrator = IntegratorType::RK4; }
 
+     int numberOfOrbits;
+
+     cout << "Enter number of orbits to simulate: ";
+     cin >> numberOfOrbits;
+
      // Initialize spacecraft position
      Spacecraft satellite;
      initializeSpacecraft(satellite, radius);
@@ -75,11 +80,11 @@ int main() {
      double initialVelocityY = satellite.velocity.y;
 
      // Initial orbital parameters
-     double speed = spacecraftSpeed(satellite);
-     double specificEnergy = specificOrbitalEnergy(satellite, speed, radius);
+     double initialSpeed = spacecraftSpeed(satellite);
+     double initialEnergy = specificOrbitalEnergy(satellite, initialSpeed, radius);
      double angularMomentum = specificAngularMomentum(satellite);
 
-     double eccentricity = orbitalEccentricity(specificEnergy, angularMomentum);
+     double eccentricity = orbitalEccentricity(initialEnergy, angularMomentum);
      Vector2D eVector = eccentricityVector(satellite);
      double eVecMagnitude = sqrt(eVector.x * eVector.x + eVector.y * eVector.y);
 
@@ -87,12 +92,12 @@ int main() {
      double periapsisAngleDeg = periapsisAngleRad * 180.0 / PI;
      bool hasDefinedPeriapsisDirection = eccentricity >= ECCENTRICITY_TOLERANCE;
 
-     double semiMajorAxisVal = semiMajorAxis(specificEnergy);
+     double semiMajorAxisVal = semiMajorAxis(initialEnergy);
 
      // Classify trajectory
      TrajectoryType trajectoryType;
 
-     if (specificEnergy < 0) {
+     if (initialEnergy < 0) {
           if (eccentricity < ECCENTRICITY_TOLERANCE) {
                trajectoryType = TrajectoryType::Circular;
           }
@@ -100,7 +105,7 @@ int main() {
                trajectoryType = TrajectoryType::Elliptical;
           }
      }
-     else if (specificEnergy > 0) {
+     else if (initialEnergy > 0) {
           trajectoryType = TrajectoryType::Hyperbolic;
      }
      else {
@@ -126,7 +131,7 @@ int main() {
 
                orbitalPeriod = (2.0 * PI) * sqrt((semiMajorAxisVal * semiMajorAxisVal * semiMajorAxisVal) / EARTH_MU);
 
-               simulation = simulateOrbit(satellite, orbitalPeriod, dt, integrator);
+               simulation = simulateOrbit(satellite, orbitalPeriod, dt, integrator, numberOfOrbits);
                break;
           }
 
@@ -135,6 +140,17 @@ int main() {
                simulation = simulateEscape(satellite, dt, ESCAPE_LIMIT, integrator);
                break;
     }
+
+     // Calculate final specific energy
+     double finalRadius = sqrt(
+          satellite.position.x * satellite.position.x +
+          satellite.position.y * satellite.position.y
+     );
+
+     double finalSpeed = spacecraftSpeed(satellite);
+     double finalEnergy = specificOrbitalEnergy(satellite, finalSpeed, finalRadius);
+     double energyError = finalEnergy - initialEnergy;
+     double relativeEnergyError = abs(energyError / initialEnergy);
 
      if (simulation.result == SimulationResult::Impact) {
           impactPercent = (simulation.impactTime / orbitalPeriod) * 100.0;
@@ -161,6 +177,22 @@ int main() {
           (satellite.position.y - initialY) *
           (satellite.position.y - initialY)
      );
+
+     cout << fixed << setprecision(9);
+
+     cout << "Initial Specific Energy:                 "
+          << initialEnergy << " J/kg" << endl;
+
+     cout << "Final Specific Energy:                   "
+          << finalEnergy << " J/kg" << endl;
+
+     cout << "Energy Error:                            "
+          << energyError << " J/kg" << endl;
+
+     cout << scientific << setprecision(9);
+     
+     cout << "Relative Energy Error:                   "
+          << relativeEnergyError << endl;
 
      metadataFile
           << trajectoryTypeToString(trajectoryType) << ","
@@ -199,8 +231,8 @@ int main() {
      // Orbital parameters
      cout << "\n=== Orbital Parameters ===\n" << endl;
 
-     cout << "Specific Energy:                         "
-          << specificEnergy
+     cout << "Initial Specific Energy:                         "
+          << initialEnergy
           << " J/kg" << endl;
 
      cout << "Specific Angular Momentum:               "

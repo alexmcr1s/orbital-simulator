@@ -171,13 +171,14 @@ double apoapsisRadius(double semiMajorAxis, double eccentricity) {
     return semiMajorAxis * (1.0 + eccentricity);
 }
 
-SimulationOutput simulateOrbit(Spacecraft& satellite, double orbitalPeriod, double dt, IntegratorType integrator) {
+SimulationOutput simulateOrbit(Spacecraft& satellite, double orbitalPeriod, double dt, IntegratorType integrator, int numberOfOrbits) {
     SimulationOutput output;
     output.impactTime = -1.0;
     double simTime = 0.0;
+    double simDuration = orbitalPeriod * numberOfOrbits;
 
-    while (simTime < orbitalPeriod) {
-        double remainingTime = orbitalPeriod - simTime;
+    while (simTime < simDuration) {
+        double remainingTime = simDuration - simTime;
         double currentDt = dt;
 
         if (remainingTime < dt) { currentDt = remainingTime; }

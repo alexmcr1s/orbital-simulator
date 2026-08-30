@@ -17,3 +17,8 @@ Thumbs.db
 
 # Local executable file
 orbital-simulator
+
+# CSV file growing too large with large # of orbits
+# Cannot be uploaded to git in this case
+orbit.csv
+orbit.png

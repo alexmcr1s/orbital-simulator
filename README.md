@@ -190,9 +190,9 @@ $$
 
 where:
 
-- $\mathbf{r}$ is the spacecraft position vector relative to Earth's center
-- $r$ is the magnitude of the position vector
-- $\mu$ is Earth's standard gravitational parameter
+- **𝐫** is the spacecraft position vector relative to Earth's center
+- `r` is the magnitude of the position vector
+- `μ` is Earth's standard gravitational parameter
 
 Because acceleration continuously changes as the spacecraft moves, the
 spacecraft state must be propagated numerically through time.

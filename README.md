@@ -204,8 +204,7 @@ The simulator currently provides three integration methods.
 The Symplectic Euler method updates velocity using the current gravitational
 acceleration and then updates position using the new velocity.
 
-It is computationally inexpensive and provides a useful baseline for comparing
-the behavior of higher-order integration methods.
+It provides a useful baseline for comparing the behavior of higher-order integration methods.
 
 ### Velocity Verlet
 
@@ -213,18 +212,14 @@ Velocity Verlet incorporates acceleration at both the beginning and end of the
 timestep.
 
 For orbital systems, this method is particularly useful because of its
-long-term behavior in conservative mechanical systems. It provides significantly
-better orbital stability than the Euler implementation while remaining
-computationally inexpensive.
+long-term behavior in conservative mechanical systems. It provides significantly better orbital stability than the Euler implementation.
 
 ### Fourth-Order Runge-Kutta (RK4)
 
-RK4 evaluates the rate of change of the spacecraft state four times during each
-timestep.
+RK4 evaluates the rate of change of the spacecraft state four times during each timestep.
 
 The four derivative estimates sample the beginning, intermediate predicted
-states, and predicted end of the timestep. They are combined using the weighted
-average:
+states, and predicted end of the timestep. They are combined using the weighted average:
 
 $$
 \frac{k_1 + 2k_2 + 2k_3 + k_4}{6}
@@ -261,10 +256,10 @@ the numerical integration method was changed.
 For this test, Velocity Verlet produced the smallest final energy error, while
 RK4 produced the smallest final position error.
 
-The comparison also demonstrates that energy conservation and trajectory
+The comparison demonstrates that energy conservation and trajectory
 accuracy are separate numerical properties. An integrator can preserve orbital
 energy extremely well while still accumulating phase error over many
-revolutions.
+orbits.
 
 Symplectic Euler remained stable but accumulated substantially more trajectory
 and energy error than either Velocity Verlet or RK4 over the 100-orbit

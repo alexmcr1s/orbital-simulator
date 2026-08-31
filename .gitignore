@@ -24,6 +24,3 @@ orbit.csv
 
 # Environment activation files
 .venv/
-
-# Latest image generated
-orbit.png

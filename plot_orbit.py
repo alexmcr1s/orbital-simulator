@@ -97,5 +97,5 @@ animation = FuncAnimation(
 
 plt.legend()
 plt.axis("equal")
-animation.save("orbit.gif", writer="pillow", fps=30)
+animation.save("docs/images/orbit-example.gif", writer="pillow", fps=30)
 plt.close()

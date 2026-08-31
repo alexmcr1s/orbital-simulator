@@ -1,6 +1,11 @@
 import pandas as pd
+import matplotlib
+
+matplotlib.use("TkAgg")
+
 import matplotlib.pyplot as plt
 import math
+from matplotlib.animation import FuncAnimation
 
 # Visualizing orbit from .csv file
 data = pd.read_csv("orbit.csv")
@@ -19,7 +24,12 @@ periapsis_direction_deg = metadata["periapsis_direction_deg"].iloc[0]
 x_km = data["x"] / 1000.0
 y_km = data["y"] / 1000.0
 
-plt.plot(x_km, y_km, label="Trajectory")
+max_frames = 300
+frame_step = max(1, len(data) // max_frames)
+animation_frames = range(0, len(data), frame_step)
+
+trajectory_line, = plt.plot([], [], label="Trajectory")
+spacecraft, = plt.plot([], [], marker="o", label="Spacecraft")
 
 earth = plt.Circle((0, 0), 6371, fill=False)
 plt.gca().add_patch(earth)
@@ -64,8 +74,30 @@ if (simulation_result == "Orbit" and pd.notna(apoapsis_altitude_km) and pd.notna
 
     plt.scatter(apoapsis_x, apoapsis_y, label="Apoapsis")
 
-plt.legend()
+def update(frame):
+    trajectory_line.set_data(
+        x_km.iloc[:frame + 1],
+        y_km.iloc[:frame + 1]
+    )
+    
+    spacecraft.set_data(
+        [x_km.iloc[frame]],
+        [y_km.iloc[frame]]
+    )
+    
+    return trajectory_line, spacecraft
 
+animation = FuncAnimation(
+    plt.gcf(), 
+    update, 
+    frames=animation_frames, 
+    interval=20, 
+    repeat=False
+)
+
+plt.legend()
 plt.axis("equal")
 
-plt.savefig("orbit.png", dpi=300)
+# plt.savefig("orbit.png", dpi=300)
+animation.save("orbit.gif", writer="pillow", fps=30)
+plt.close()

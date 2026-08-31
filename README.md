@@ -259,7 +259,7 @@ RK4 produced the smallest final position error.
 The comparison demonstrates that energy conservation and trajectory
 accuracy are separate numerical properties. An integrator can preserve orbital
 energy extremely well while still accumulating phase error over many
-orbits.
+revolutions.
 
 Symplectic Euler remained stable but accumulated substantially more trajectory
 and energy error than either Velocity Verlet or RK4 over the 100-orbit

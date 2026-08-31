@@ -37,6 +37,7 @@ struct SimulationState {
     Vector2D position;
     Vector2D velocity;
     double altitude;
+    double specificEnergy;
 };
 
 struct SimulationOutput {

@@ -10,6 +10,13 @@ from matplotlib.animation import FuncAnimation
 # Visualizing orbit from .csv file
 data = pd.read_csv("orbit.csv")
 
+initial_energy = data["specific_energy"].iloc[0]
+
+data["energy_error"] = (data["specific_energy"] - initial_energy)
+
+print("Minimum energy error:", data["energy_error"].min())
+print("Maximum energy error:", data["energy_error"].max())
+
 # Transferring metadata
 metadata = pd.read_csv("simulation_metadata.csv")
 
@@ -74,6 +81,7 @@ if (simulation_result == "Orbit" and pd.notna(apoapsis_altitude_km) and pd.notna
 
     plt.scatter(apoapsis_x, apoapsis_y, label="Apoapsis")
 
+# For animation
 def update(frame):
     trajectory_line.set_data(
         x_km.iloc[:frame + 1],
@@ -98,4 +106,21 @@ animation = FuncAnimation(
 plt.legend()
 plt.axis("equal")
 animation.save("docs/images/orbit-example.gif", writer="pillow", fps=30)
+plt.close()
+
+# Energy error plot
+plt.figure()
+
+plt.plot(
+    data["time"],
+    data["energy_error"]
+)
+
+plt.xlabel("Time (s)")
+plt.ylabel("Specific Energy Error (J/kg)")
+plt.title(f"Energy Conservation — {integrator}")
+
+plt.grid()
+
+plt.savefig("docs/images/energy-error.png", dpi=300)
 plt.close()

@@ -13,7 +13,7 @@ int main() {
 
      // Prepare CSV
      ofstream outputFile("orbit.csv");
-     outputFile << "time,x,y,altitude\n";
+     outputFile << "time,x,y,altitude,specific_energy\n";
      ofstream metadataFile("simulation_metadata.csv");
      metadataFile
           << "trajectory_type,"
@@ -206,7 +206,8 @@ int main() {
 
      for (const SimulationState& state : simulation.states) {
           outputFile << state.time << "," << state.position.x << ","
-                     << state.position.y << "," << state.altitude << "\n";
+                     << state.position.y << "," << state.altitude << ","
+                     << state.specificEnergy << "\n";
      }
 
      outputFile.close();

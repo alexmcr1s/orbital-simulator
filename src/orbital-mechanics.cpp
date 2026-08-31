@@ -204,12 +204,16 @@ SimulationOutput simulateOrbit(Spacecraft& satellite, double orbitalPeriod, doub
 
         double altitudeKm = (currentRadius - EARTH_RADIUS) / 1000.0;
 
+        double currentSpeed = spacecraftSpeed(satellite);
+        double currentEnergy = specificOrbitalEnergy(satellite, currentSpeed, currentRadius);
+
         SimulationState state;
 
         state.time = simTime;
         state.position = satellite.position;
         state.velocity = satellite.velocity;
         state.altitude = altitudeKm;
+        state.specificEnergy = currentEnergy;
 
         output.states.push_back(state);
 
@@ -244,12 +248,16 @@ SimulationOutput simulateEscape(Spacecraft& satellite, double dt, double escapeL
 
         double altitudeKm = (currentRadius - EARTH_RADIUS) / 1000.0;
 
+        double currentSpeed = spacecraftSpeed(satellite);
+        double currentEnergy = specificOrbitalEnergy(satellite, currentSpeed, currentRadius);
+
         SimulationState state;
 
         state.time = simTime;
         state.position = satellite.position;
         state.velocity = satellite.velocity;
         state.altitude = altitudeKm;
+        state.specificEnergy = currentEnergy;
 
         output.states.push_back(state);
     }

@@ -99,7 +99,7 @@ cd your-directory
 Clone the repository and enter the project directory:
 
 ```bash
-git clone <https://github.com/alexmcr1s/orbital-simulator.git>
+git clone https://github.com/alexmcr1s/orbital-simulator.git
 cd orbital-simulator
 ```
 
@@ -113,7 +113,7 @@ No additional Linux environment is required. Open a terminal and clone the repos
 mkdir -p ~/your-directory
 cd ~/your-directory
 
-git clone <https://github.com/alexmcr1s/orbital-simulator.git>
+git clone https://github.com/alexmcr1s/orbital-simulator.git
 cd orbital-simulator
 ```
 
@@ -125,7 +125,7 @@ No additional Linux environment is required. Open a terminal and clone the repos
 mkdir -p ~/your-directory
 cd ~/your-directory
 
-git clone <https://github.com/alexmcr1s/orbital-simulator.git>
+git clone https://github.com/alexmcr1s/orbital-simulator.git
 cd orbital-simulator
 ```
 

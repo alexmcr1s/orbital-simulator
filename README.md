@@ -241,6 +241,12 @@ orbit-example.gif
 
 (Upon every execution of `python plot_orbit.py`, the GIF will be re-rendered.)
 
+> **Performance Note:**  
+> Visualizing a large number of orbits can take significantly longer to process and may generate large output files. For testing and visualization, using a small number of orbits is recommended. Larger simulations can still be run, but GIF generation may become slow as the amount of simulation data increases.
+>
+> For example, a **100-orbit simulation** may be useful for analyzing long-term orbital behavior, but generating an animated GIF of the entire simulation is not recommended.
+> Adversely, a **1-orbit simulation** will be quickest for generating an animated gif of the simulation, but it doesn't represent long term behavior as accurately.
+
 ## Numerical Methods
 
 The simulator numerically solves the spacecraft equations of motion rather than

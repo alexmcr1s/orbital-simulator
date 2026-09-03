@@ -18,9 +18,11 @@ Thumbs.db
 # Local executable file
 orbital-simulator
 
-# CSV file growing too large with large # of orbits
-# Cannot be uploaded to git in this case
-orbit.csv
-
 # Environment activation files
 .venv/
+
+# Generated simulation output (user-specific)
+# Added benefit: generates too much data to upload to GitHub in the case of a large number of orbits
+orbit.csv
+simulation_metadata.csv
+orbit-example.gif

@@ -4,8 +4,8 @@ A two-dimensional orbital mechanics simulator written in C++ that models
 spacecraft trajectories around Earth using Newtonian gravity.
 
 The simulator supports configurable launch conditions, automatic trajectory
-classification, multiple numerical integration methods, collision and escape
-detection, multi-orbit propagation, and Python-based trajectory visualization.
+classification, selectable numerical integration methods, collision and escape
+detection, multi-orbit propagation, and Python-based trajectory visualization via GIF!
 
 ## Example Simulation
 
@@ -17,7 +17,7 @@ detection, multi-orbit propagation, and Python-based trajectory visualization.
 
 <p align="center">
   <em>
-    Example: elliptical Earth orbit generated using the C++ simulation engine
+    Example: elliptical orbit around Earth generated using the C++ simulation engine
     and visualized with Python and Matplotlib.
   </em>
 </p>
@@ -26,14 +26,14 @@ The visualization is generated from spacecraft state data calculated by the
 C++ simulation engine. Python is used only to visualize the resulting trajectory
 and simulation metadata.
 
-Depending on the simulation result, the visualization can display:
+Depending on the simulation result, the visualization might display:
 
-- Initial and final spacecraft positions
-- Earth impact location
-- Escape-limit position
-- Periapsis and apoapsis for completed bound trajectories
-- Trajectory classification
-- Numerical integration method
+- Initial and final spacecraft positions (completed orbits only)
+- Earth impact location (impacts only)
+- Escape-limit position (escapes only)
+- Periapsis (lowest point) and apoapsis (highest point) (completed orbits only)
+- Trajectory classification (all)
+- Numerical integration method (all)
 
 ## Features
 
@@ -79,14 +79,57 @@ The visualization additionally uses:
 
 These are the packages included in the `requirements.txt` file.
 
-### Clone the Repository
+### 1. Clone the Repository
+
+Choose the instructions below for your operating system.
+
+### 1.1 Windows (WSL2 / Ubuntu)
+
+For Windows users, it is recommended to run the project through
+WSL2 with Ubuntu and clone the repository directly into the Linux filesystem.
+
+Open your Ubuntu/WSL terminal and create/navigate to the directory where you would like to keep this project:
 
 ```bash
-git clone https://github.com/alexmcr1s/orbital-simulator.git
+cd ~
+mkdir -p your-directory
+cd your-directory
+```
+
+Clone the repository and enter the project directory:
+
+```bash
+git clone <https://github.com/alexmcr1s/orbital-simulator.git>
 cd orbital-simulator
 ```
 
-### Compile
+> **Note:** If you intend to build and run the project through WSL, avoid cloning the repository into `/mnt/c/...`. Keeping the repository inside the Linux filesystem (for example, `/home/username/Coding-Projects/`) can avoid filesystem and permission issues and generally provides better WSL performance.
+
+### 1.2 Linux
+
+No additional Linux environment is required. Open a terminal and clone the repository into a directory of your choice:
+
+```bash
+mkdir -p ~/your-directory
+cd ~/your-directory
+
+git clone <https://github.com/alexmcr1s/orbital-simulator.git>
+cd orbital-simulator
+```
+
+### 1.3 MacOS
+
+No Linux environment or WSL installation is required on macOS. Open Terminal and clone the repository normally:
+
+```bash
+mkdir -p ~/your-directory
+cd ~/your-directory
+
+git clone <https://github.com/alexmcr1s/orbital-simulator.git>
+cd orbital-simulator
+```
+
+### 2. Compile
 
 From the project root:
 
@@ -94,7 +137,7 @@ From the project root:
 g++ src/main.cpp src/orbital-mechanics.cpp -Iinclude -o orbital-simulator
 ```
 
-### Run
+### 3. Run
 
 ```bash
 ./orbital-simulator
@@ -108,20 +151,24 @@ The simulator will prompt for:
 4. Numerical integration method
 5. Number of orbits to simulate
 
-## Python Environment Setup
+This is to verify setup with a successful compilation & run, as we have not yet visualized the data. You will, however, see most of the calculations and orbital parameters output to the console upon every simulation run.
+
+## 4. Python Environment Setup
 
 The Python visualization dependencies should be installed inside a virtual
 environment.
 
-### Create the Virtual Environment
+The repository does **not** include a Python virtual environment. Each user should create their own `.venv` after cloning the repository. (This can be done after initial compilation & run verification)
 
-This only needs to be done once after cloning the repository:
+### 4.1 Create the Virtual Environment
+
+This only needs to be done once after cloning the repository, but repeated every time you close and then re-open the root (i.e. you open it up next week to test an update):
 
 ```bash
 python3 -m venv .venv
 ```
 
-### Activate the Virtual Environment
+### 4.2 Activate the Virtual Environment
 
 ```bash
 source .venv/bin/activate
@@ -133,13 +180,13 @@ After activation, the terminal prompt should begin with:
 (.venv)
 ```
 
-### Install Visualization Dependencies
+### 4.3 Install Visualization Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### Verify the Environment
+### 4.4 Verify the Environment
 
 ```bash
 python -c "import pandas; import matplotlib; print('ready')"
@@ -151,7 +198,7 @@ If the environment is configured correctly, the command should output:
 ready
 ```
 
-## Generate a Visualization
+## 5. Generate a Visualization
 
 First, run the C++ simulator to generate the trajectory and simulation
 metadata.
@@ -172,12 +219,25 @@ The resulting visualization is saved as:
 
 ## Simulation Output
 
-The simulator generates:
+The simulator (not the visualizer) generates the following files:
 
 ```text
 orbit.csv
 simulation_metadata.csv
 ```
+
+Upon every execution of './orbital-simulator', the data in these files will be updated/modified
+
+The visualizer (not the simulator) generates the following files:
+
+```text
+orbit-example.gif
+```
+
+Upon every execution of 'python plot_orbit.py', the GIF will be re-rendered.
+
+> ** Note: `energy-error.png` is an unfinished feature at this stage. Disregard.
+
 
 ## Numerical Methods
 

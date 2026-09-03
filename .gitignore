@@ -26,3 +26,6 @@ orbital-simulator
 orbit.csv
 simulation_metadata.csv
 orbit-example.gif
+
+# Feature not yet ready
+energy-error.png

@@ -119,7 +119,7 @@ cd orbital-simulator
 
 ### 1.3 MacOS
 
-No Linux environment or WSL installation is required on macOS. Open Terminal and clone the repository normally:
+No additional Linux environment is required. Open a terminal and clone the repository into a directory of your choice:
 
 ```bash
 mkdir -p ~/your-directory
@@ -151,18 +151,18 @@ The simulator will prompt for:
 4. Numerical integration method
 5. Number of orbits to simulate
 
-This is to verify setup with a successful compilation & run, as we have not yet visualized the data. You will, however, see most of the calculations and orbital parameters output to the console upon every simulation run.
+This is to verify setup with a successful compilation & run, as the data has not yet bene visualized. The user will, however, see most of the calculations and orbital parameters output to the console upon every simulation run.
 
 ## 4. Python Environment Setup
 
 The Python visualization dependencies should be installed inside a virtual
 environment.
 
-The repository does **not** include a Python virtual environment. Each user should create their own `.venv` after cloning the repository. (This can be done after initial compilation & run verification)
+The repository does **not** include a Python virtual environment. Each user should create their own `.venv` after cloning the repository. (This **can** be done after initial compilation & run verification)
 
 ### 4.1 Create the Virtual Environment
 
-This only needs to be done once after cloning the repository, but repeated every time you close and then re-open the root (i.e. you open it up next week to test an update):
+This only needs to be done once after cloning the repository for initial setup.
 
 ```bash
 python3 -m venv .venv
@@ -170,23 +170,30 @@ python3 -m venv .venv
 
 ### 4.2 Activate the Virtual Environment
 
+This must be done **every time the project is opened** to activate the virtual environment.
+
 ```bash
 source .venv/bin/activate
 ```
 
-After activation, the terminal prompt should begin with:
+After activation, the terminal prompt should always begin with:
 
 ```text
 (.venv)
 ```
+**This is the greenlight for visualization.**
 
 ### 4.3 Install Visualization Dependencies
+
+This only needs to be done once after cloning the repository for initial setup.
 
 ```bash
 pip install -r requirements.txt
 ```
 
 ### 4.4 Verify the Environment
+
+This step is optional, but **highly recommended** upon initial setup.
 
 ```bash
 python -c "import pandas; import matplotlib; print('ready')"
@@ -200,7 +207,7 @@ ready
 
 ## 5. Generate a Visualization
 
-First, run the C++ simulator to generate the trajectory and simulation
+If not already, run the C++ simulator to generate the trajectory and simulation
 metadata.
 
 Then, with the Python virtual environment activated, run:
@@ -215,29 +222,24 @@ The resulting visualization is saved as:
 "docs/images/orbit-example.gif"
 ```
 
-`orbit-example.gif` represents the most recently visualized simulation.
-
 ## Simulation Output
 
-The simulator (not the visualizer) generates the following files:
+The **simulator** generates the following files:
 
 ```text
 orbit.csv
 simulation_metadata.csv
 ```
 
-Upon every execution of './orbital-simulator', the data in these files will be updated/modified
+(Upon every execution of `./orbital-simulator`, the data in these files will be updated.)
 
-The visualizer (not the simulator) generates the following files:
+The **visualizer** generates the following files:
 
 ```text
 orbit-example.gif
 ```
 
-Upon every execution of 'python plot_orbit.py', the GIF will be re-rendered.
-
-> ** Note: `energy-error.png` is an unfinished feature at this stage. Disregard.
-
+(Upon every execution of `python plot_orbit.py`, the GIF will be re-rendered.)
 
 ## Numerical Methods
 

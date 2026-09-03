@@ -151,7 +151,7 @@ The simulator will prompt for:
 4. Numerical integration method
 5. Number of orbits to simulate
 
-This is to verify setup with a successful compilation & run, as the data has not yet bene visualized. The user will, however, see most of the calculations and orbital parameters output to the console upon every simulation run.
+This is to verify setup with a successful compilation & run, as the data has not yet been visualized. The user will, however, see most of the calculations and orbital parameters output to the console upon every simulation run.
 
 ## 4. Python Environment Setup
 

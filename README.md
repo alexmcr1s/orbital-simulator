@@ -277,7 +277,7 @@ The simulator currently provides three integration methods.
 The simulator tracks relative specific orbital energy error throughout the simulation, providing a way to evaluate the numerical accuracy of the selected integration method.
 
 <p align="center">
-  <img src="docs/images/readme-error-ex.gif"
+  <img src="docs/images/readme-error-ex.png"
      alt="Graph plotting the relative energy error over time during the simulation."
      width="800">
 </p>

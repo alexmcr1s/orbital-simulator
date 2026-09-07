@@ -103,7 +103,7 @@ git clone https://github.com/alexmcr1s/orbital-simulator.git
 cd orbital-simulator
 ```
 
-> **Note:** If you intend to build and run the project through WSL, avoid cloning the repository into `/mnt/c/...`. Keeping the repository inside the Linux filesystem (for example, `/home/username/Coding-Projects/`) can avoid filesystem and permission issues and generally provides better WSL performance.
+> **Note:** If you intend to build and run the project through WSL, avoid cloning the repository into `/mnt/c/...`. Keeping the repository inside the Linux filesystem (for example, `/home/username/Coding-Projects/`) can avoid filesystem and permission issues and provides better WSL performance.
 
 ### 1.2 Linux
 
@@ -220,6 +220,7 @@ The resulting visualization is saved as:
 
 ```text
 "docs/images/orbit-example.gif"
+"docs/images/energy-error.png"
 ```
 
 ## Simulation Output
@@ -237,14 +238,15 @@ The **visualizer** generates the following files:
 
 ```text
 orbit-example.gif
+energy-error.png
 ```
 
-(Upon every execution of `python plot_orbit.py`, the GIF will be re-rendered.)
+(Upon every execution of `python plot_orbit.py`, the files will be re-rendered based upon new data.)
 
 > **Performance Note:**  
 > Visualizing a large number of orbits can take significantly longer to process and may generate large output files. For testing and visualization, using a small number of orbits is recommended. Larger simulations can still be run, but GIF generation may become slow as the amount of simulation data increases.
 >
-> For example, a **100-orbit simulation** may be useful for analyzing long-term orbital behavior, but generating an animated GIF of the entire simulation is not recommended.
+> For example, a **1000-orbit simulation** may be useful for analyzing long-term orbital behavior, but generating an animated GIF of the entire simulation is not recommended.
 > Adversely, a **1-orbit simulation** will be quickest for generating an animated gif of the simulation, but it doesn't represent long term behavior as accurately.
 
 ## Numerical Methods
@@ -269,6 +271,22 @@ Because acceleration continuously changes as the spacecraft moves, the
 spacecraft state must be propagated numerically through time.
 
 The simulator currently provides three integration methods.
+
+### Energy Conservation
+
+The simulator tracks relative specific orbital energy error throughout the simulation, providing a way to evaluate the numerical accuracy of the selected integration method.
+
+<p align="center">
+  <img src="docs/images/readme-error-ex.gif"
+     alt="Graph plotting the relative energy error over time during the simulation."
+     width="800">
+</p>
+
+<p align="center">
+  <em>
+    Example: The relative energy error fluctuation of the given example simulation.
+  </em>
+</p>
 
 ### Symplectic Euler
 
@@ -344,6 +362,8 @@ Contains the propagated spacecraft state throughout the simulation, including:
 - X position
 - Y position
 - Altitude
+- Specific Energy
+- Energy Error
 
 ### `simulation_metadata.csv`
 

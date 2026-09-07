@@ -13,7 +13,7 @@ int main() {
 
      // Prepare CSV
      ofstream outputFile("orbit.csv");
-     outputFile << "time,x,y,altitude,specific_energy\n";
+     outputFile << "time,x,y,altitude,specific_energy,energy_error\n";
      ofstream metadataFile("simulation_metadata.csv");
      metadataFile
           << "trajectory_type,"
@@ -131,7 +131,7 @@ int main() {
 
                orbitalPeriod = (2.0 * PI) * sqrt((semiMajorAxisVal * semiMajorAxisVal * semiMajorAxisVal) / EARTH_MU);
 
-               simulation = simulateOrbit(satellite, orbitalPeriod, dt, integrator, numberOfOrbits);
+               simulation = simulateOrbit(satellite, orbitalPeriod, dt, integrator, numberOfOrbits, initialEnergy);
                break;
           }
 
@@ -150,7 +150,7 @@ int main() {
      double finalSpeed = spacecraftSpeed(satellite);
      double finalEnergy = specificOrbitalEnergy(satellite, finalSpeed, finalRadius);
      double energyError = finalEnergy - initialEnergy;
-     double relativeEnergyError = abs(energyError / initialEnergy);
+     double relativeEnergyError = std::abs(energyError / initialEnergy) * 100.0;
 
      if (simulation.result == SimulationResult::Impact) {
           impactPercent = (simulation.impactTime / orbitalPeriod) * 100.0;
@@ -186,7 +186,7 @@ int main() {
      cout << "Final Specific Energy:                   "
           << finalEnergy << " J/kg" << endl;
 
-     cout << "Energy Error:                            "
+     cout << "Final Energy Error:                            "
           << energyError << " J/kg" << endl;
 
      cout << scientific << setprecision(9);
@@ -204,10 +204,13 @@ int main() {
 
      metadataFile.close();
 
+     outputFile << std::setprecision(15);
+
      for (const SimulationState& state : simulation.states) {
           outputFile << state.time << "," << state.position.x << ","
                      << state.position.y << "," << state.altitude << ","
-                     << state.specificEnergy << "\n";
+                     << state.specificEnergy << ", " << state.energyError
+                     << "\n";
      }
 
      outputFile.close();

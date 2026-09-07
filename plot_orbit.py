@@ -10,13 +10,6 @@ from matplotlib.animation import FuncAnimation
 # Visualizing orbit from .csv file
 data = pd.read_csv("orbit.csv")
 
-initial_energy = data["specific_energy"].iloc[0]
-
-data["energy_error"] = (data["specific_energy"] - initial_energy)
-
-print("Minimum energy error:", data["energy_error"].min())
-print("Maximum energy error:", data["energy_error"].max())
-
 # Transferring metadata
 metadata = pd.read_csv("simulation_metadata.csv")
 
@@ -117,7 +110,7 @@ plt.plot(
 )
 
 plt.xlabel("Time (s)")
-plt.ylabel("Specific Energy Error (J/kg)")
+plt.ylabel("Relative Energy Error (%)")
 plt.title(f"Energy Conservation — {integrator}")
 
 plt.grid()

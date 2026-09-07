@@ -171,7 +171,7 @@ double apoapsisRadius(double semiMajorAxis, double eccentricity) {
     return semiMajorAxis * (1.0 + eccentricity);
 }
 
-SimulationOutput simulateOrbit(Spacecraft& satellite, double orbitalPeriod, double dt, IntegratorType integrator, int numberOfOrbits) {
+SimulationOutput simulateOrbit(Spacecraft& satellite, double orbitalPeriod, double dt, IntegratorType integrator, int numberOfOrbits, double initialEnergy) {
     SimulationOutput output;
     output.impactTime = -1.0;
     double simTime = 0.0;
@@ -206,6 +206,7 @@ SimulationOutput simulateOrbit(Spacecraft& satellite, double orbitalPeriod, doub
 
         double currentSpeed = spacecraftSpeed(satellite);
         double currentEnergy = specificOrbitalEnergy(satellite, currentSpeed, currentRadius);
+        double currentEnergyError = std::abs((currentEnergy - initialEnergy) / initialEnergy) * 100.0;
 
         SimulationState state;
 
@@ -214,6 +215,7 @@ SimulationOutput simulateOrbit(Spacecraft& satellite, double orbitalPeriod, doub
         state.velocity = satellite.velocity;
         state.altitude = altitudeKm;
         state.specificEnergy = currentEnergy;
+        state.energyError = currentEnergyError;
 
         output.states.push_back(state);
 

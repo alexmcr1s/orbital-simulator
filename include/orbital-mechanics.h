@@ -31,7 +31,7 @@ void updateSpacecraftRK4(Spacecraft& satellite, double dt);
 double spacecraftSpeed(const Spacecraft& sattelite);
 
 // Specific orbital energy
-double specificOrbitalEnergy(const Spacecraft& satellite, double speed, double radius);
+double specificOrbitalEnergy(double speed, double radius);
 
 // Calculates specific angular momentum for periapsis calculations
 // Read-only function, does not ever modify "satellite"

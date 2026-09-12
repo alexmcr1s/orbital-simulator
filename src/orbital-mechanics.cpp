@@ -102,7 +102,7 @@ void updateSpacecraftRK4(Spacecraft& satellite, double dt) {
                 + 2.0 * k3.velocity.y + k4.velocity.y);
 }
 
-double specificOrbitalEnergy(const Spacecraft& satellite, double speed, double radius) {
+double specificOrbitalEnergy(double speed, double radius) {
     return (speed * speed) / 2.0 - EARTH_MU / radius;
 }
 
@@ -205,7 +205,7 @@ SimulationOutput simulateOrbit(Spacecraft& satellite, double orbitalPeriod, doub
         double altitudeKm = (currentRadius - EARTH_RADIUS) / 1000.0;
 
         double currentSpeed = spacecraftSpeed(satellite);
-        double currentEnergy = specificOrbitalEnergy(satellite, currentSpeed, currentRadius);
+        double currentEnergy = specificOrbitalEnergy(currentSpeed, currentRadius);
         double currentEnergyError = std::abs((currentEnergy - initialEnergy) / initialEnergy) * 100.0;
 
         SimulationState state;
@@ -243,7 +243,17 @@ SimulationOutput simulateEscape(Spacecraft& satellite, double dt, double escapeL
     );
 
     while (currentRadius < escapeLimit) {
-        updateSpacecraft(satellite, dt);
+        switch (integrator) {
+            case IntegratorType::Euler:
+                updateSpacecraft(satellite, dt);
+                break;
+            case IntegratorType::Verlet:
+                updateSpacecraftVerlet(satellite, dt);
+                break;
+            case IntegratorType::RK4:
+                updateSpacecraftRK4(satellite, dt);
+                break;
+        }
         simTime += dt;
 
         currentRadius = sqrt(satellite.position.x * satellite.position.x + satellite.position.y * satellite.position.y);
@@ -251,7 +261,7 @@ SimulationOutput simulateEscape(Spacecraft& satellite, double dt, double escapeL
         double altitudeKm = (currentRadius - EARTH_RADIUS) / 1000.0;
 
         double currentSpeed = spacecraftSpeed(satellite);
-        double currentEnergy = specificOrbitalEnergy(satellite, currentSpeed, currentRadius);
+        double currentEnergy = specificOrbitalEnergy(currentSpeed, currentRadius);
 
         SimulationState state;
 

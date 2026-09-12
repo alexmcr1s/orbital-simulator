@@ -134,7 +134,7 @@ cd orbital-simulator
 From the project root:
 
 ```bash
-g++ src/main.cpp src/orbital-mechanics.cpp -Iinclude -o orbital-simulator
+g++ src/main.cpp src/simulation.cpp src/orbital-mechanics.cpp -Iinclude -o orbital-simulator
 ```
 
 ### 3. Run

@@ -2,7 +2,6 @@
 #include "constants.h"
 
 #include <cmath>
-#include <fstream>
 
 
 void initializeSpacecraft(Spacecraft& satellite, double radius) {
@@ -241,6 +240,7 @@ SimulationOutput simulateEscape(Spacecraft& satellite, double dt, double escapeL
         satellite.position.x * satellite.position.x +
         satellite.position.y * satellite.position.y
     );
+    double initialEnergy = specificOrbitalEnergy(spacecraftSpeed(satellite), currentRadius);
 
     while (currentRadius < escapeLimit) {
         switch (integrator) {
@@ -262,6 +262,7 @@ SimulationOutput simulateEscape(Spacecraft& satellite, double dt, double escapeL
 
         double currentSpeed = spacecraftSpeed(satellite);
         double currentEnergy = specificOrbitalEnergy(currentSpeed, currentRadius);
+        double currentEnergyError = std::abs((currentEnergy - initialEnergy) / initialEnergy) * 100.0;
 
         SimulationState state;
 
@@ -270,6 +271,7 @@ SimulationOutput simulateEscape(Spacecraft& satellite, double dt, double escapeL
         state.velocity = satellite.velocity;
         state.altitude = altitudeKm;
         state.specificEnergy = currentEnergy;
+        state.energyError = currentEnergyError;
 
         output.states.push_back(state);
     }

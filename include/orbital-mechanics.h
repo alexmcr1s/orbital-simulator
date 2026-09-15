@@ -2,7 +2,6 @@
 #define ORBITAL_MECHANICS_H
 
 #include "data-structures.h"
-#include <fstream>
 #include <vector>
 #include <string>
 

@@ -176,6 +176,16 @@ SimulationOutput simulateOrbit(Spacecraft& satellite, double orbitalPeriod, doub
     double simTime = 0.0;
     double simDuration = orbitalPeriod * numberOfOrbits;
 
+    double initialRadius = vectorMagnitude(satellite.position);
+    SimulationState initialState;
+    initialState.time = simTime;
+    initialState.position = satellite.position;
+    initialState.velocity = satellite.velocity;
+    initialState.altitude = (initialRadius - EARTH_RADIUS) / 1000.0;
+    initialState.specificEnergy = initialEnergy;
+    initialState.energyError = 0.0;
+    output.states.push_back(initialState);
+
     while (simTime < simDuration) {
         double remainingTime = simDuration - simTime;
         double currentDt = dt;
@@ -241,6 +251,15 @@ SimulationOutput simulateEscape(Spacecraft& satellite, double dt, double escapeL
         satellite.position.y * satellite.position.y
     );
     double initialEnergy = specificOrbitalEnergy(spacecraftSpeed(satellite), currentRadius);
+
+    SimulationState initialState;
+    initialState.time = simTime;
+    initialState.position = satellite.position;
+    initialState.velocity = satellite.velocity;
+    initialState.altitude = (currentRadius - EARTH_RADIUS) / 1000.0;
+    initialState.specificEnergy = initialEnergy;
+    initialState.energyError = 0.0;
+    output.states.push_back(initialState);
 
     while (currentRadius < escapeLimit) {
         switch (integrator) {

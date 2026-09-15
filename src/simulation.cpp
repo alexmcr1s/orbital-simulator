@@ -4,6 +4,7 @@
 #include "orbital-mechanics.h"
 
 #include <cmath>
+#include <limits>
 
 SimulationReport runSimulation(const SimulationConfig& config) {
     double altitude = config.altitudeKm * 1000;
@@ -30,9 +31,10 @@ SimulationReport runSimulation(const SimulationConfig& config) {
     Vector2D eVector = eccentricityVector(satellite);
     report.eVecMagnitude = sqrt(eVector.x * eVector.x + eVector.y * eVector.y);
 
-    double periapsisAngleRad = atan2(eVector.y, eVector.x);
-    report.periapsisAngleDeg = periapsisAngleRad * 180.0 / PI;
     report.hasDefinedPeriapsisDirection = report.eccentricity >= ECCENTRICITY_TOLERANCE;
+    report.periapsisAngleDeg = report.hasDefinedPeriapsisDirection
+        ? atan2(eVector.y, eVector.x) * 180.0 / PI
+        : std::numeric_limits<double>::quiet_NaN();
 
     report.semiMajorAxisVal = semiMajorAxis(report.initialEnergy);
 

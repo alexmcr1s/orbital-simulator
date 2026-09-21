@@ -6,7 +6,62 @@
 #include <cmath>
 #include <limits>
 
+namespace {
+
+SimulationValidationError validateConfig(const SimulationConfig& config) {
+    if (!std::isfinite(config.altitudeKm) || config.altitudeKm < 0.0) {
+        return SimulationValidationError::InvalidAltitude;
+    }
+    double radius = EARTH_RADIUS + config.altitudeKm * 1000.0;
+    if (!std::isfinite(radius)) {
+        return SimulationValidationError::InvalidAltitude;
+    }
+    if (!std::isfinite(config.velocityMultiplier) || config.velocityMultiplier < 0.0) {
+        return SimulationValidationError::InvalidVelocityMultiplier;
+    }
+    if (!std::isfinite(circularVelocity(radius) * config.velocityMultiplier)) {
+        return SimulationValidationError::InvalidVelocityMultiplier;
+    }
+    if (!std::isfinite(config.launchAngleDeg)) {
+        return SimulationValidationError::InvalidLaunchAngle;
+    }
+    switch (config.integrator) {
+        case IntegratorType::Euler:
+        case IntegratorType::Verlet:
+        case IntegratorType::RK4:
+            break;
+        default:
+            return SimulationValidationError::InvalidIntegrator;
+    }
+    if (config.numberOfOrbits <= 0) {
+        return SimulationValidationError::InvalidOrbitCount;
+    }
+    if (!std::isfinite(config.timeStep) || config.timeStep <= 0.0) {
+        return SimulationValidationError::InvalidTimeStep;
+    }
+    if (!std::isfinite(config.escapeLimit) || config.escapeLimit <= EARTH_RADIUS) {
+        return SimulationValidationError::InvalidEscapeLimit;
+    }
+    if (config.maxIntegrationSteps == 0) {
+        return SimulationValidationError::InvalidMaxIntegrationSteps;
+    }
+    if (config.stateSampleStride == 0) {
+        return SimulationValidationError::InvalidStateSampleStride;
+    }
+
+    return SimulationValidationError::None;
+}
+
+} // namespace
+
 SimulationReport runSimulation(const SimulationConfig& config) {
+    SimulationReport report{};
+    report.validationError = validateConfig(config);
+    if (report.validationError != SimulationValidationError::None) {
+        report.status = SimulationRunStatus::InvalidConfiguration;
+        return report;
+    }
+
     double altitude = config.altitudeKm * 1000;
     double radius = EARTH_RADIUS + altitude;
 
@@ -19,7 +74,6 @@ SimulationReport runSimulation(const SimulationConfig& config) {
     satellite.velocity.x = launchSpeed * cos(launchAngleRad);
     satellite.velocity.y = launchSpeed * sin(launchAngleRad);
 
-    SimulationReport report;
     report.initialSpacecraft = satellite;
 
     // Initial orbital parameters
@@ -69,14 +123,20 @@ SimulationReport runSimulation(const SimulationConfig& config) {
             report.orbitalPeriod = (2.0 * PI) * sqrt((report.semiMajorAxisVal * report.semiMajorAxisVal * report.semiMajorAxisVal) / EARTH_MU);
 
             report.simulation = simulateOrbit(satellite, report.orbitalPeriod, config.timeStep,
-                                              config.integrator, config.numberOfOrbits, report.initialEnergy);
+                                              config.integrator, config.numberOfOrbits, report.initialEnergy,
+                                              config.maxIntegrationSteps, config.stateSampleStride);
             break;
         }
 
         case TrajectoryType::Parabolic:
         case TrajectoryType::Hyperbolic:
-            report.simulation = simulateEscape(satellite, config.timeStep, config.escapeLimit, config.integrator);
+            report.simulation = simulateEscape(satellite, config.timeStep, config.escapeLimit, config.integrator,
+                                               config.maxIntegrationSteps, config.stateSampleStride);
             break;
+    }
+
+    if (report.simulation.reachedStepLimit) {
+        report.status = SimulationRunStatus::StepLimitReached;
     }
 
     // Calculate final specific energy

@@ -2,6 +2,7 @@
 #define ORBITAL_MECHANICS_H
 
 #include "data-structures.h"
+#include <cstddef>
 #include <vector>
 #include <string>
 
@@ -52,10 +53,10 @@ double periapsisRadius(double semiMajorAxis, double eccentricity);
 double apoapsisRadius(double semiMajorAxis, double eccentricity);
 
 // Simulates one orbit
-SimulationOutput simulateOrbit(Spacecraft& satellite, double orbitalPeriod, double dt, IntegratorType integrator, int numberOfOrbits, double initialEnergy);
+SimulationOutput simulateOrbit(Spacecraft& satellite, double orbitalPeriod, double dt, IntegratorType integrator, int numberOfOrbits, double initialEnergy, std::size_t maxIntegrationSteps, std::size_t stateSampleStride);
 
 // Simualtes the escape trajectory
-SimulationOutput simulateEscape(Spacecraft& satellite, double dt, double escapeLimit, IntegratorType integrator);
+SimulationOutput simulateEscape(Spacecraft& satellite, double dt, double escapeLimit, IntegratorType integrator, std::size_t maxIntegrationSteps, std::size_t stateSampleStride);
 
 // Helper for derivatives 
 Derivative evaluateDerivative(const Spacecraft& satellite);

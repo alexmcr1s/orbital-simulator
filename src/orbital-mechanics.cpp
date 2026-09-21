@@ -170,7 +170,7 @@ double apoapsisRadius(double semiMajorAxis, double eccentricity) {
     return semiMajorAxis * (1.0 + eccentricity);
 }
 
-SimulationOutput simulateOrbit(Spacecraft& satellite, double orbitalPeriod, double dt, IntegratorType integrator, int numberOfOrbits, double initialEnergy) {
+SimulationOutput simulateOrbit(Spacecraft& satellite, double orbitalPeriod, double dt, IntegratorType integrator, int numberOfOrbits, double initialEnergy, std::size_t maxIntegrationSteps, std::size_t stateSampleStride) {
     SimulationOutput output;
     output.impactTime = -1.0;
     double simTime = 0.0;
@@ -186,7 +186,8 @@ SimulationOutput simulateOrbit(Spacecraft& satellite, double orbitalPeriod, doub
     initialState.energyError = 0.0;
     output.states.push_back(initialState);
 
-    while (simTime < simDuration) {
+    std::size_t step = 0;
+    while (simTime < simDuration && step < maxIntegrationSteps) {
         double remainingTime = simDuration - simTime;
         double currentDt = dt;
 
@@ -226,7 +227,10 @@ SimulationOutput simulateOrbit(Spacecraft& satellite, double orbitalPeriod, doub
         state.specificEnergy = currentEnergy;
         state.energyError = currentEnergyError;
 
-        output.states.push_back(state);
+        bool isFinalState = currentRadius <= EARTH_RADIUS || simTime >= simDuration || step + 1 == maxIntegrationSteps;
+        if ((step + 1) % stateSampleStride == 0 || isFinalState) {
+            output.states.push_back(state);
+        }
 
         if (currentRadius <= EARTH_RADIUS) {
             output.impactTime = simTime;
@@ -234,14 +238,22 @@ SimulationOutput simulateOrbit(Spacecraft& satellite, double orbitalPeriod, doub
 
             return output;
         }
+
+        ++step;
     }
-    
+
+    if (simTime < simDuration) {
+        output.result = SimulationResult::StepLimitReached;
+        output.reachedStepLimit = true;
+        return output;
+    }
+
     output.result = SimulationResult::Orbit;
 
     return output;
 }
 
-SimulationOutput simulateEscape(Spacecraft& satellite, double dt, double escapeLimit, IntegratorType integrator) {
+SimulationOutput simulateEscape(Spacecraft& satellite, double dt, double escapeLimit, IntegratorType integrator, std::size_t maxIntegrationSteps, std::size_t stateSampleStride) {
     SimulationOutput output;
     output.result = SimulationResult::Escape;
     double simTime = 0.0;
@@ -261,7 +273,8 @@ SimulationOutput simulateEscape(Spacecraft& satellite, double dt, double escapeL
     initialState.energyError = 0.0;
     output.states.push_back(initialState);
 
-    while (currentRadius < escapeLimit) {
+    std::size_t step = 0;
+    while (currentRadius < escapeLimit && step < maxIntegrationSteps) {
         switch (integrator) {
             case IntegratorType::Euler:
                 updateSpacecraft(satellite, dt);
@@ -292,7 +305,17 @@ SimulationOutput simulateEscape(Spacecraft& satellite, double dt, double escapeL
         state.specificEnergy = currentEnergy;
         state.energyError = currentEnergyError;
 
-        output.states.push_back(state);
+        bool isFinalState = currentRadius >= escapeLimit || step + 1 == maxIntegrationSteps;
+        if ((step + 1) % stateSampleStride == 0 || isFinalState) {
+            output.states.push_back(state);
+        }
+
+        ++step;
+    }
+
+    if (currentRadius < escapeLimit) {
+        output.result = SimulationResult::StepLimitReached;
+        output.reachedStepLimit = true;
     }
 
     return output;
@@ -335,6 +358,9 @@ std::string simulationResultToString(SimulationResult result) {
 
         case SimulationResult::Escape:
             return "Escape";
+
+        case SimulationResult::StepLimitReached:
+            return "Step Limit Reached";
     }
 
     return "Unknown";

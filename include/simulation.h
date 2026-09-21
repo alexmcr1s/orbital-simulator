@@ -4,6 +4,27 @@
 #include "constants.h"
 #include "data-structures.h"
 
+#include <cstddef>
+
+enum class SimulationRunStatus {
+    Completed,
+    InvalidConfiguration,
+    StepLimitReached
+};
+
+enum class SimulationValidationError {
+    None,
+    InvalidAltitude,
+    InvalidVelocityMultiplier,
+    InvalidLaunchAngle,
+    InvalidIntegrator,
+    InvalidOrbitCount,
+    InvalidTimeStep,
+    InvalidEscapeLimit,
+    InvalidMaxIntegrationSteps,
+    InvalidStateSampleStride
+};
+
 // Inputs required to run one simulation. A console UI, GUI, or test can build
 // this structure without depending on any input/output code.
 struct SimulationConfig {
@@ -14,11 +35,15 @@ struct SimulationConfig {
     int numberOfOrbits = 1;
     double timeStep = dt;
     double escapeLimit = ESCAPE_LIMIT;
+    std::size_t maxIntegrationSteps = 1'000'000;
+    std::size_t stateSampleStride = 1;
 };
 
 // Values calculated for a completed simulation. Presentation layers can use
 // this report to render a console summary, GUI, CSV file, or other format.
 struct SimulationReport {
+    SimulationRunStatus status = SimulationRunStatus::Completed;
+    SimulationValidationError validationError = SimulationValidationError::None;
     Spacecraft initialSpacecraft;
     Spacecraft finalSpacecraft;
     SimulationOutput simulation;

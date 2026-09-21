@@ -28,7 +28,8 @@ enum class TrajectoryType {
 enum class SimulationResult {
     Orbit,
     Impact,
-    Escape
+    Escape,
+    StepLimitReached
 };
 
 // For rendering purposes (future)
@@ -45,6 +46,7 @@ struct SimulationOutput {
     SimulationResult result;
     std::vector<SimulationState> states;
     double impactTime;
+    bool reachedStepLimit = false;
 };
 
 enum class IntegratorType {
